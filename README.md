@@ -1,57 +1,95 @@
 # Autonomous Drone Swarm Simulator
 
-A Python/Pygame simulation of coordinated autonomous drones performing
-real-time reconnaissance, mapping, and search-and-rescue over a procedurally
-generated grid.
+A real-time autonomous drone swarm simulation built with Python and Pygame.
 
-## What It Does
+The project simulates coordinated reconnaissance and search-and-rescue missions across procedurally generated environments using autonomous multi-agent drone behavior, communication-aware exploration, and realistic battery/docking systems.
 
-- Runs 8 autonomous drones with independent state machines.
-- Generates seeded terrain with obstacles, no-fly zones, wind zones, threat
-  zones, fog of war, and survivor zones.
-- Uses A* pathfinding with octile distance, smoothing, route variation, and
-  soft congestion/reservation penalties.
-- Coordinates the swarm with frontier exploration, sector fallback assignment,
-  relay-anchor roles, and battery-aware task bidding.
-- Simulates radio range, relay routing, lost-communication recovery, offline
-  exploration, and sync after reconnection.
-- Models battery drain, low/critical return-to-base behavior, physical docking,
-  recharge, relaunch, and stranded drones.
-- Renders a live Pygame UI with menu, demo mode, pause/end screens, dashboard,
-  minimap, camera pan/zoom/follow, trails, sensor rings, comm links, frontier
-  overlays, and replay controls.
-- Writes mission metrics CSV files and can export/load replay JSON files.
+---
 
-## Performance
+## Features
 
-The simulator targets 60 FPS. In an audit run on this machine, simulation
-updates ran at about 573 FPS equivalent without rendering; a full-overlay
-software render probe ran at about 41 FPS equivalent. Actual FPS depends on
-hardware, display driver, active overlays, and capture tools.
+### Autonomous Drone AI
 
-## Requirements
+* Independent drone finite-state machines
+* Frontier-based exploration
+* Battery-aware task planning
+* Autonomous offline operation during communication loss
+* Lost-communication recovery and synchronization
+* Dynamic relay-anchor roles for mesh networking
 
-- Python 3.10+
-- pip
-- Pygame and NumPy, installed from `requirements.txt`
+### Swarm Coordination
 
-## Setup
+* Multi-drone frontier negotiation
+* Sector fallback assignment
+* Communication-aware path planning
+* Reservation-aware congestion avoidance
+* Adaptive exploration vs relay balancing
+
+### Environment Simulation
+
+* Procedurally generated terrain
+* Obstacles and no-fly zones
+* Fog of war
+* Weather and wind systems
+* Survivor placement and search zones
+
+### Realistic Systems
+
+* Physical docking and charging only at base
+* Battery drain, recharge, relaunch, and stranded states
+* Relay mesh communication network
+* Offline autonomy with delayed synchronization
+
+### Visualization & Replay
+
+* Real-time Pygame dashboard and minimap
+* Camera pan, zoom, and follow modes
+* Drone trails, sensor rings, and communication links
+* Replay export/load system
+* CSV mission analytics logging
+* Cinematic demo mode
+
+---
+
+## Tech Stack
+
+* Python
+* Pygame
+* NumPy
+* Pytest
+
+---
+
+## Demo
+
+### Main Simulation
+
+(Add screenshot or GIF here)
+
+### Replay / Analytics System
+
+(Add replay or metrics screenshot here)
+
+---
+
+## Installation
 
 ```bash
-# Clone or download this repository, then enter the project directory.
-cd drone_swarm_simulator
+git clone https://github.com/elyess2500/autonomous-drone-swarm-simulator.git
+cd autonomous-drone-swarm-simulator
 
-# Optional but recommended:
 python -m venv .venv
 
-# Windows:
+# Windows
 .venv\Scripts\activate
 
-# macOS/Linux:
+# macOS/Linux
 source .venv/bin/activate
 
 pip install -r requirements.txt
 ```
+
+---
 
 ## Run
 
@@ -59,10 +97,9 @@ pip install -r requirements.txt
 python main.py
 ```
 
-The app opens to a main menu with Start Mission, Demo Mode, Replay Viewer,
-Settings, and Quit.
+---
 
-## Test
+## Tests
 
 ```bash
 python -m pytest -q
@@ -71,77 +108,76 @@ python tests/gameplay_smoke.py
 python tests/battery_docking_tests.py
 ```
 
-The smoke tests create runtime metrics under `logs/`; replay exports are written
-under `replays/` when triggered. These generated directories are intentionally
-ignored by git.
+---
 
 ## Controls
 
-| Key | Action |
-|-----|--------|
-| `1-5` | Main menu shortcuts |
-| `H` | Toggle heatmap overlay |
-| `C` | Toggle communication links |
-| `S` | Toggle sensor rings |
-| `T` | Toggle drone trails |
-| `F` | Toggle frontier overlay |
-| `V` | Toggle reservation overlay |
-| `D` | Toggle drone decision labels |
-| `P` | Pause / resume |
-| `+` / `-` | Zoom camera in / out |
-| Arrow keys or `WASD` | Pan camera |
-| `Space` | Cycle follow-drone camera |
-| `Q` | Reset camera follow/zoom |
-| `M` | Return to main menu |
-| `R` | Restart with a new random map |
-| `Y` | Manually rescue stranded drones |
-| `E` | Export replay JSON |
-| `L` | Load latest replay JSON |
-| `ESC` | Quit or return to menu |
+| Key           | Action                     |
+| ------------- | -------------------------- |
+| H             | Toggle heatmap             |
+| C             | Toggle communication links |
+| S             | Toggle sensor rings        |
+| T             | Toggle drone trails        |
+| F             | Toggle frontier overlay    |
+| V             | Toggle reservation overlay |
+| D             | Toggle AI decision labels  |
+| P             | Pause / resume             |
+| +/-           | Zoom camera                |
+| WASD / Arrows | Pan camera                 |
+| Space         | Follow next drone          |
+| Q             | Reset camera               |
+| R             | Restart mission            |
+| E             | Export replay              |
+| L             | Load replay                |
+| ESC           | Quit                       |
+
+---
 
 ## Project Structure
 
 ```text
-drone_swarm_simulator/
-|-- main.py              # Entry point, app loop, menu, rendering pipeline
-|-- config.py            # Tunable simulation parameters
-|-- requirements.txt     # Runtime dependencies
-|-- README.md
-|-- LICENSE
-|-- core/
-|   |-- analytics.py     # Metrics, CSV logging, replay persistence
-|   |-- battery.py       # Battery drain/recharge model
-|   |-- communication.py # Radio range, relay routing, fog sync
-|   |-- drone.py         # Individual drone agent and state machine
-|   |-- intelligence.py  # Frontier map and reservation table
-|   |-- map.py           # Terrain, fog of war, survivor placement
-|   |-- mission.py       # Mission state, weather, replay playback
-|   |-- pathfinding.py   # A* and path smoothing
-|   `-- swarm.py         # Swarm coordination and task negotiation
-|-- ui/
-|   |-- dashboard.py     # Telemetry and mission dashboard
-|   `-- minimap.py       # Overview map
-|-- docs/
-|   |-- architecture.md
-|   `-- algorithms.md
-`-- tests/
-    |-- battery_docking_tests.py
-    `-- gameplay_smoke.py
+core/
+    analytics.py
+    battery.py
+    communication.py
+    drone.py
+    intelligence.py
+    map.py
+    mission.py
+    pathfinding.py
+    swarm.py
+
+ui/
+    dashboard.py
+    minimap.py
+
+tests/
+    gameplay_smoke.py
+    battery_docking_tests.py
 ```
 
-## Configuration
+Additional implementation details:
 
-All primary settings live in `config.py`, including map size, drone count,
-sensor range, battery thresholds, communication range, weather intervals,
-frontier negotiation, reservation penalties, analytics paths, and replay paths.
+* `docs/architecture.md`
+* `docs/algorithms.md`
 
-## Documentation
+---
 
-- `docs/architecture.md` describes module responsibilities and data flow.
-- `docs/algorithms.md` explains pathfinding, coverage planning, swarm
-  assignment, communication routing, battery behavior, and the drone FSM.
+## Current Status
 
+The simulator includes:
+
+* autonomous exploration,
+* relay mesh communication,
+* offline drone autonomy,
+* replay/analytics systems,
+* realistic docking and battery behavior,
+* and cinematic visualization tools.
+
+The project is actively being refined for performance optimization, additional mission behaviors, and expanded AI coordination systems.
+
+---
 
 ## License
 
-MIT. See `LICENSE`.
+MIT License.

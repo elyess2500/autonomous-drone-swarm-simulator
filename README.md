@@ -67,9 +67,10 @@ The project simulates coordinated reconnaissance and search-and-rescue missions 
 <img width="1747" height="1012" alt="image" src="https://github.com/user-attachments/assets/1477e0f2-3b75-4378-92e2-cba416d44776" />
 
 
-### Replay / Analytics System
+### Analytics System
 
-(Add replay or metrics screenshot here)
+<img width="798" height="504" alt="image" src="https://github.com/user-attachments/assets/7c761fef-829d-47c2-a9f5-dba8c348e090" />
+
 
 ---
 

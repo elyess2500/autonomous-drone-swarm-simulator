@@ -141,25 +141,6 @@ frontier negotiation, reservation penalties, analytics paths, and replay paths.
 - `docs/algorithms.md` explains pathfinding, coverage planning, swarm
   assignment, communication routing, battery behavior, and the drone FSM.
 
-## Capture Notes
-
-The simulator does not include a built-in recorder. Use OS or GPU capture tools
-for screenshots, GIFs, or video so the simulation loop stays focused on
-gameplay and rendering.
-
-Recommended capture options:
-
-- Screenshots: Windows Snipping Tool, Steam/NVIDIA/AMD overlays, or the OS
-  screenshot shortcut.
-- GIFs: ScreenToGif or ShareX at 15-30 FPS.
-- Video: OBS Studio with a 1400x850 canvas and 30 or 60 FPS.
-
-## Portfolio Notes
-
-Before publishing, add a real screenshot or short GIF to the repository and
-replace this note with the media in the README. The codebase is ready to run and
-test locally, but a visual preview will make the project easier to evaluate at a
-glance.
 
 ## License
 

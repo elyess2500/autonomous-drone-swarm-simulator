@@ -1,0 +1,65 @@
+........................................................................ [ 23%]
+........................................................................ [ 46%]
+........................................................................ [ 69%]
+........................................................................ [ 92%]
+.........................                                                [100%]
+============================== warnings summary ===============================
+..\..\..\.codex\visualizations\2026\09\18\01a0b1ff-7e58-78a2-8471-ee5373358d93\step12_venv\Lib\site-packages\pygame\pkgdata.py:25
+  local validation artifact UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+    from pkg_resources import resource_stream, resource_exists
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=================================== PASSES ====================================
+_____________________________ test_gameplay_smoke _____________________________
+---------------------------- Captured stdout call -----------------------------
+seed=2026
+frames=10800
+coverage_start=0.0124
+coverage_end=0.5049
+survivors_found=5/5
+survivor_detection_bonus=3
+scan_radius=3
+relaunch_succeeded=True
+stuck_zero_rtb=[]
+stranded=[]
+final_lost_comm=[]
+max_lost_comm_streaks={0: 534, 1: 433, 2: 389, 3: 487, 4: 461, 5: 433, 6: 515, 7: 494}
+connectivity_min_connected=4/8
+connectivity_avg_ratio=0.787
+connectivity_majority_ratio=0.999
+connectivity_full_collapse_frames=0
+swarm_comm_repairs=219
+swarm_full_collapse_events=0
+relay_drones=1
+explorer_drones=4
+avg_frontier_distance=45.78
+coverage_growth_per_min=9.65%
+comm_risk_relaxation=0.65
+offline_risk_assignments=2
+forced_lost_comm={'recovered': True, 'max_lost_streak': 827, 'final_state': 'scanning', 'frames_since_contact': 0, 'recovery_label': 'base (timeout)'}
+offline_autonomy={'was_offline_autonomous': True, 'offline_cells': 29, 'unsynced_before_reconnect': 29, 'pending_after_sync': 0, 'synced_cells_visible': True, 'comm_mode': 'SYNCING', 'field_charging_violation': False}
+offline_survivor={'survivor_idx': 4, 'detected_offline': True, 'global_before_sync': False, 'global_after_sync': True, 'synced_survivors': 1, 'field_charging_violation': False}
+emergency_recoveries=0
+- generated xml file: local validation artifact -
+============================ slowest 20 durations =============================
+409.39s call     tests/gameplay_smoke.py::test_gameplay_smoke
+15.63s call     tests/headless_tests.py::test_sequential_headless_seeds_and_config_context_do_not_leak
+5.79s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[normal-144]
+4.21s call     tests/headless_tests.py::test_cold_engine_inspection_csv_replay_and_clean_termination
+4.15s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[normal-30]
+4.01s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[normal-60]
+3.94s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[delayed-60]
+3.83s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[noisy-60]
+3.73s call     tests/reliability_tests.py::test_bounded_golden_and_repeat
+3.40s call     tests/headless_tests.py::test_existing_execution_does_not_need_graphical_initialization
+2.51s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[reduced-60]
+2.35s call     tests/experiment_tests.py::test_interleaved_experiments_and_exception_restore_configuration
+2.29s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[overlays_off-60]
+2.05s call     tests/accounting_tests.py::test_event_order_and_metrics_independent_of_presentation
+1.92s call     tests/experiment_tests.py::test_failures_enabled_repeat_despite_presentation_draws
+1.80s call     tests/headless_tests.py::test_display_rendering_is_observer_and_matches_headless[normal-60]
+1.78s call     tests/headless_tests.py::test_display_rendering_is_observer_and_matches_headless[normal-144]
+1.77s call     tests/headless_tests.py::test_display_rendering_is_observer_and_matches_headless[noisy-60]
+1.76s call     tests/headless_tests.py::test_display_rendering_is_observer_and_matches_headless[normal-30]
+1.70s call     tests/experiment_tests.py::test_configuration_is_immutable_and_reconstructs_after_global_changes
+313 passed, 1 warning in 530.63s (0:08:50)

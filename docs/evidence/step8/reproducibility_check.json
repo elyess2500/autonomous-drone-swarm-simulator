@@ -1,0 +1,63 @@
+{
+  "before_after": [
+    {
+      "seed": 2026,
+      "fields": 33,
+      "differences": []
+    },
+    {
+      "seed": 2027,
+      "fields": 33,
+      "differences": []
+    },
+    {
+      "seed": 2031,
+      "fields": 33,
+      "differences": []
+    }
+  ],
+  "repeat": {
+    "seed": 2026,
+    "fields": 37,
+    "differences": []
+  },
+  "matrix": [
+    {
+      "mode": "headless",
+      "fps": 60,
+      "differences": []
+    },
+    {
+      "mode": "normal",
+      "fps": 60,
+      "differences": []
+    },
+    {
+      "mode": "normal",
+      "fps": 30,
+      "differences": []
+    },
+    {
+      "mode": "normal",
+      "fps": 144,
+      "differences": []
+    },
+    {
+      "mode": "reduced",
+      "fps": 60,
+      "differences": []
+    },
+    {
+      "mode": "overlays_off",
+      "fps": 60,
+      "differences": []
+    },
+    {
+      "mode": "noisy",
+      "fps": 60,
+      "differences": []
+    }
+  ],
+  "component_call_counts_match": true,
+  "repeat_component_call_counts_match": true
+}

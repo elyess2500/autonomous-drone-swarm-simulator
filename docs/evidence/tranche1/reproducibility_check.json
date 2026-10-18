@@ -1,0 +1,38 @@
+{
+  "seed": 2026,
+  "ticks": 3600,
+  "non_timing_fields_compared": [
+    "average_connectivity",
+    "coverage_pct",
+    "field_charging_violations",
+    "final_orphaned_ownership",
+    "frontier_awards",
+    "frontier_completions",
+    "min_connectivity",
+    "orphaned_ownership_ticks",
+    "path_searches",
+    "relay_task_conflicts",
+    "seed",
+    "state_hash",
+    "states",
+    "survivors",
+    "task_cancellations",
+    "ticks",
+    "unfinished_task_replacements"
+  ],
+  "differences": {},
+  "state_hash_equal": true,
+  "state_hash": "932fe36206f28b06c2e2525adbfe9bbdd1fed90d46ad009c44ce72eba56459e7",
+  "reservation_table_unchanged_from_HEAD": true,
+  "source_sha256": {
+    "core/drone.py": "2dc3e2d6f7632c035dd4f2a781dda6a979186a375734ea368508aa09e51607d6",
+    "core/pathfinding.py": "48f4ddcf89b5415b63c44c42f065a5d842f4851cce76dad785ae93a421733b3e",
+    "core/swarm.py": "b1844fddb3e0059e0fb5f57d273c93c17c6add25e384b1979507e95358d86249",
+    "core/intelligence.py": "d5ab54135e461e512bf5844c223653bd4c52684497ec2cf4fe5715348c2b25aa",
+    "core/geometry.py": "f62848c9ba2235cc462629507808b4b9bf9a40da19a8654a23798a3670d94592",
+    "tests/motion_tests.py": "22744d0bd07bb87d7bfff1fe0a1da48febb8d55ac218db912b6ff07a6fa58d1a",
+    "tests/pathfinding_tests.py": "e30e89f73afb287ba152210918c20f60230010ef6b13e30f96ad2ca773153198",
+    "tests/task_lifecycle_tests.py": "3cb19b660dc50839bedc47ef45ca6c4581fa954e39299f04522b4d089b0028db",
+    "benchmarks/tranche1.py": "60f6a2a1048f955ff36b7a74885ac1b2c26611a4a6f0b81613c157c60a995d3b"
+  }
+}

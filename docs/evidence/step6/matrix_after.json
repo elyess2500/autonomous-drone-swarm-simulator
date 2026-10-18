@@ -1,0 +1,149 @@
+{
+  "methodology": "step6-presentation-v1",
+  "results": [
+    {
+      "seed": 2026,
+      "mode": "headless",
+      "fps": 60,
+      "state_hash": "611cd4ded71b12f9127e85474311d5a44a67b9a09dd2f7753e991731bcc88b84",
+      "knowledge_hash": "ced3646a4d46ae193369d52be271dd38c2a0827621d06503d39e39ba7dfd6729",
+      "experiment_hash": "859b4326a1372e447488dea1ec58e333c0b2b0e6fb9d090bc59baa7e592d613c",
+      "coverage": 0.06118598382749326,
+      "survivors": 0,
+      "elapsed_seconds": 5.0,
+      "ticks": 300,
+      "weather": "Clear",
+      "states": {
+        "failed": 6,
+        "idle": 1,
+        "scanning": 1
+      }
+    },
+    {
+      "seed": 2026,
+      "mode": "normal",
+      "fps": 60,
+      "state_hash": "611cd4ded71b12f9127e85474311d5a44a67b9a09dd2f7753e991731bcc88b84",
+      "knowledge_hash": "ced3646a4d46ae193369d52be271dd38c2a0827621d06503d39e39ba7dfd6729",
+      "experiment_hash": "859b4326a1372e447488dea1ec58e333c0b2b0e6fb9d090bc59baa7e592d613c",
+      "coverage": 0.06118598382749326,
+      "survivors": 0,
+      "elapsed_seconds": 5.0,
+      "ticks": 300,
+      "weather": "Clear",
+      "states": {
+        "failed": 6,
+        "idle": 1,
+        "scanning": 1
+      }
+    },
+    {
+      "seed": 2026,
+      "mode": "normal",
+      "fps": 30,
+      "state_hash": "611cd4ded71b12f9127e85474311d5a44a67b9a09dd2f7753e991731bcc88b84",
+      "knowledge_hash": "ced3646a4d46ae193369d52be271dd38c2a0827621d06503d39e39ba7dfd6729",
+      "experiment_hash": "859b4326a1372e447488dea1ec58e333c0b2b0e6fb9d090bc59baa7e592d613c",
+      "coverage": 0.06118598382749326,
+      "survivors": 0,
+      "elapsed_seconds": 5.0,
+      "ticks": 300,
+      "weather": "Clear",
+      "states": {
+        "failed": 6,
+        "idle": 1,
+        "scanning": 1
+      }
+    },
+    {
+      "seed": 2026,
+      "mode": "normal",
+      "fps": 144,
+      "state_hash": "611cd4ded71b12f9127e85474311d5a44a67b9a09dd2f7753e991731bcc88b84",
+      "knowledge_hash": "ced3646a4d46ae193369d52be271dd38c2a0827621d06503d39e39ba7dfd6729",
+      "experiment_hash": "859b4326a1372e447488dea1ec58e333c0b2b0e6fb9d090bc59baa7e592d613c",
+      "coverage": 0.06118598382749326,
+      "survivors": 0,
+      "elapsed_seconds": 5.0,
+      "ticks": 300,
+      "weather": "Clear",
+      "states": {
+        "failed": 6,
+        "idle": 1,
+        "scanning": 1
+      }
+    },
+    {
+      "seed": 2026,
+      "mode": "reduced",
+      "fps": 60,
+      "state_hash": "611cd4ded71b12f9127e85474311d5a44a67b9a09dd2f7753e991731bcc88b84",
+      "knowledge_hash": "ced3646a4d46ae193369d52be271dd38c2a0827621d06503d39e39ba7dfd6729",
+      "experiment_hash": "859b4326a1372e447488dea1ec58e333c0b2b0e6fb9d090bc59baa7e592d613c",
+      "coverage": 0.06118598382749326,
+      "survivors": 0,
+      "elapsed_seconds": 5.0,
+      "ticks": 300,
+      "weather": "Clear",
+      "states": {
+        "failed": 6,
+        "idle": 1,
+        "scanning": 1
+      }
+    },
+    {
+      "seed": 2026,
+      "mode": "overlays_off",
+      "fps": 60,
+      "state_hash": "611cd4ded71b12f9127e85474311d5a44a67b9a09dd2f7753e991731bcc88b84",
+      "knowledge_hash": "ced3646a4d46ae193369d52be271dd38c2a0827621d06503d39e39ba7dfd6729",
+      "experiment_hash": "859b4326a1372e447488dea1ec58e333c0b2b0e6fb9d090bc59baa7e592d613c",
+      "coverage": 0.06118598382749326,
+      "survivors": 0,
+      "elapsed_seconds": 5.0,
+      "ticks": 300,
+      "weather": "Clear",
+      "states": {
+        "failed": 6,
+        "idle": 1,
+        "scanning": 1
+      }
+    },
+    {
+      "seed": 2026,
+      "mode": "noisy",
+      "fps": 60,
+      "state_hash": "611cd4ded71b12f9127e85474311d5a44a67b9a09dd2f7753e991731bcc88b84",
+      "knowledge_hash": "ced3646a4d46ae193369d52be271dd38c2a0827621d06503d39e39ba7dfd6729",
+      "experiment_hash": "859b4326a1372e447488dea1ec58e333c0b2b0e6fb9d090bc59baa7e592d613c",
+      "coverage": 0.06118598382749326,
+      "survivors": 0,
+      "elapsed_seconds": 5.0,
+      "ticks": 300,
+      "weather": "Clear",
+      "states": {
+        "failed": 6,
+        "idle": 1,
+        "scanning": 1
+      }
+    },
+    {
+      "seed": 2026,
+      "mode": "delayed",
+      "fps": 60,
+      "state_hash": "611cd4ded71b12f9127e85474311d5a44a67b9a09dd2f7753e991731bcc88b84",
+      "knowledge_hash": "ced3646a4d46ae193369d52be271dd38c2a0827621d06503d39e39ba7dfd6729",
+      "experiment_hash": "859b4326a1372e447488dea1ec58e333c0b2b0e6fb9d090bc59baa7e592d613c",
+      "coverage": 0.06118598382749326,
+      "survivors": 0,
+      "elapsed_seconds": 5.0,
+      "ticks": 300,
+      "weather": "Clear",
+      "states": {
+        "failed": 6,
+        "idle": 1,
+        "scanning": 1
+      }
+    }
+  ]
+}

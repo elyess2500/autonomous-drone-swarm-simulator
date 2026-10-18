@@ -1,0 +1,213 @@
+{
+  "label": "step4-final",
+  "methodology": "step4-contact-interval-v2-components",
+  "failure_probability": 0,
+  "results": [
+    {
+      "seed": 2026,
+      "ticks": 3600,
+      "path_searches": 2222,
+      "unfinished_task_replacements": 0,
+      "relay_task_conflicts": 0,
+      "orphaned_ownership_ticks": 0,
+      "frontier_awards": 19,
+      "frontier_completions": 10,
+      "final_orphaned_ownership": 0,
+      "coverage_pct": 24.12398921832884,
+      "survivors": 2,
+      "average_connectivity": 0.834375,
+      "min_connectivity": 0.625,
+      "field_charging_violations": 0,
+      "states": {
+        "charging": 3,
+        "scanning": 3,
+        "idle": 2
+      },
+      "task_cancellations": {
+        "replace with relay": 6,
+        "relay lease ended": 5,
+        "offline timeout/battery": 2
+      },
+      "mean_ms": 11.956782749944573,
+      "p95_ms": 21.2794999795733,
+      "p99_ms": 25.38565597729753,
+      "state_hash": "78ca5dba2d20351341ce32ce70798fe2a39c3b7b9bab48df36bcaad1aea29a3f",
+      "point_contact_pair_ticks": 0,
+      "proximity_episodes": 24,
+      "majority_connected_ticks": 3600,
+      "full_collapse_ticks": 0,
+      "stranded_drone_ticks": 0,
+      "majority_connectivity": 1.0,
+      "p50_ms": 12.244399986229837,
+      "max_ms": 129.57160000223666,
+      "execution_counters": {
+        "conflicts": 3384,
+        "waits": 3384,
+        "recovery_attempts": 1,
+        "recoveries": 1,
+        "deadlocks": 0
+      },
+      "component_timing": {
+        "rebuild": {
+          "calls": 7200,
+          "mean_ms": 2.3530974998559233,
+          "p50_ms": 2.236500004073605,
+          "p95_ms": 3.0676700174808493,
+          "p99_ms": 4.451792959007448,
+          "max_ms": 12.538700015284121,
+          "total_ms": 16942.30199896265,
+          "per_tick_ms": 4.706194999711847
+        },
+        "try_move": {
+          "calls": 17216,
+          "mean_ms": 0.008873617712214206,
+          "p50_ms": 0.007800001185387373,
+          "p95_ms": 0.014425037079490721,
+          "p99_ms": 0.022270003682933456,
+          "max_ms": 0.13180001405999064,
+          "total_ms": 152.76820253347978,
+          "per_tick_ms": 0.042435611814855494
+        }
+      }
+    },
+    {
+      "seed": 2027,
+      "ticks": 3600,
+      "path_searches": 3038,
+      "unfinished_task_replacements": 0,
+      "relay_task_conflicts": 0,
+      "orphaned_ownership_ticks": 0,
+      "frontier_awards": 23,
+      "frontier_completions": 11,
+      "final_orphaned_ownership": 0,
+      "coverage_pct": 30.551816958277257,
+      "survivors": 2,
+      "average_connectivity": 0.8174305555555555,
+      "min_connectivity": 0.5,
+      "field_charging_violations": 0,
+      "states": {
+        "idle": 2,
+        "scanning": 1,
+        "lost_comm": 2,
+        "charging": 2,
+        "returning": 1
+      },
+      "task_cancellations": {
+        "replace with relay": 4,
+        "relay lease ended": 3,
+        "offline timeout/battery": 5,
+        "returning": 1
+      },
+      "mean_ms": 11.238393055294486,
+      "p95_ms": 22.13924999523441,
+      "p99_ms": 26.1693809978896,
+      "state_hash": "6c3f42ec1d0fcd19ffb488780a14fb8655271d09c4e523f7b95dec254eabe9d4",
+      "point_contact_pair_ticks": 0,
+      "proximity_episodes": 30,
+      "majority_connected_ticks": 3575,
+      "full_collapse_ticks": 0,
+      "stranded_drone_ticks": 0,
+      "majority_connectivity": 0.9930555555555556,
+      "p50_ms": 9.990799997467548,
+      "max_ms": 79.06040002126247,
+      "execution_counters": {
+        "conflicts": 5857,
+        "waits": 5857,
+        "recovery_attempts": 2,
+        "recoveries": 2,
+        "deadlocks": 0
+      },
+      "component_timing": {
+        "rebuild": {
+          "calls": 7200,
+          "mean_ms": 2.464103138902121,
+          "p50_ms": 2.336400037165731,
+          "p95_ms": 3.1771599780768116,
+          "p99_ms": 5.719004005077304,
+          "max_ms": 15.975699992850423,
+          "total_ms": 17741.542600095272,
+          "per_tick_ms": 4.928206277804242
+        },
+        "try_move": {
+          "calls": 19703,
+          "mean_ms": 0.009804410376366554,
+          "p50_ms": 0.008100003469735384,
+          "p95_ms": 0.017600017599761486,
+          "p99_ms": 0.027099973522126675,
+          "max_ms": 0.2713000285439193,
+          "total_ms": 193.17629764555022,
+          "per_tick_ms": 0.05366008267931951
+        }
+      }
+    },
+    {
+      "seed": 2031,
+      "ticks": 3600,
+      "path_searches": 3101,
+      "unfinished_task_replacements": 0,
+      "relay_task_conflicts": 0,
+      "orphaned_ownership_ticks": 0,
+      "frontier_awards": 24,
+      "frontier_completions": 13,
+      "final_orphaned_ownership": 0,
+      "coverage_pct": 24.642760851981667,
+      "survivors": 3,
+      "average_connectivity": 0.8042361111111112,
+      "min_connectivity": 0.625,
+      "field_charging_violations": 0,
+      "states": {
+        "charging": 3,
+        "idle": 2,
+        "lost_comm": 2,
+        "scanning": 1
+      },
+      "task_cancellations": {
+        "replace with relay": 5,
+        "relay lease ended": 3,
+        "offline timeout/battery": 3,
+        "returning": 1
+      },
+      "mean_ms": 10.085635499643912,
+      "p95_ms": 17.61376000649761,
+      "p99_ms": 23.033974952413693,
+      "state_hash": "8b4be3d02b4545fba8ff1c8e3ece71ec1fc6bb962aa4ae0e5f4bffccb739bac8",
+      "point_contact_pair_ticks": 0,
+      "proximity_episodes": 40,
+      "majority_connected_ticks": 3600,
+      "full_collapse_ticks": 0,
+      "stranded_drone_ticks": 0,
+      "majority_connectivity": 1.0,
+      "p50_ms": 8.725700026843697,
+      "max_ms": 40.95180000877008,
+      "execution_counters": {
+        "conflicts": 6602,
+        "waits": 6602,
+        "recovery_attempts": 4,
+        "recoveries": 4,
+        "deadlocks": 0
+      },
+      "component_timing": {
+        "rebuild": {
+          "calls": 7200,
+          "mean_ms": 2.475053402716488,
+          "p50_ms": 2.385749976383522,
+          "p95_ms": 3.0845999746816233,
+          "p99_ms": 4.354033974814231,
+          "max_ms": 13.674899993930012,
+          "total_ms": 17820.384499558713,
+          "per_tick_ms": 4.950106805432976
+        },
+        "try_move": {
+          "calls": 20364,
+          "mean_ms": 0.009489820254726972,
+          "p50_ms": 0.007700000423938036,
+          "p95_ms": 0.01680001150816679,
+          "p99_ms": 0.024699976784177125,
+          "max_ms": 2.42379994597286,
+          "total_ms": 193.25069966726005,
+          "per_tick_ms": 0.05368074990757224
+        }
+      }
+    }
+  ]
+}

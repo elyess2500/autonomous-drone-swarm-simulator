@@ -1,0 +1,1366 @@
+[
+  {
+    "file": "docs/portfolio_summary.md",
+    "added": 6,
+    "removed": 0
+  },
+  {
+    "file": "docs/research_protocol.md",
+    "added": 90,
+    "removed": 0
+  },
+  {
+    "file": "docs/research_report.md",
+    "added": 187,
+    "removed": 0
+  },
+  {
+    "file": "docs/step15_engineering_report.md",
+    "added": 271,
+    "removed": 0
+  },
+  {
+    "file": "experiments/build_step15_report.py",
+    "added": 171,
+    "removed": 0
+  },
+  {
+    "file": "experiments/finalize_step15.py",
+    "added": 172,
+    "removed": 0
+  },
+  {
+    "file": "experiments/run_step15.py",
+    "added": 217,
+    "removed": 0
+  },
+  {
+    "file": "experiments/test_analysis_step15.py",
+    "added": 34,
+    "removed": 0
+  },
+  {
+    "file": "experiments/test_step15.py",
+    "added": 52,
+    "removed": 0
+  },
+  {
+    "file": "experiments/validate_step15.py",
+    "added": 68,
+    "removed": 0
+  },
+  {
+    "file": "README.md",
+    "added": 7,
+    "removed": 1
+  },
+  {
+    "file": "research/analysis/analyze.py",
+    "added": 214,
+    "removed": 0
+  },
+  {
+    "file": "research/analysis/requirements.txt",
+    "added": 11,
+    "removed": 0
+  },
+  {
+    "file": "research/figures/coverage_effects.pdf",
+    "bytes": 18057
+  },
+  {
+    "file": "research/figures/coverage_effects.png",
+    "bytes": 76985
+  },
+  {
+    "file": "research/figures/coverage_effects.svg",
+    "bytes": 54739
+  },
+  {
+    "file": "research/figures/paired_outcomes.pdf",
+    "bytes": 32493
+  },
+  {
+    "file": "research/figures/paired_outcomes.png",
+    "bytes": 278645
+  },
+  {
+    "file": "research/figures/paired_outcomes.svg",
+    "bytes": 109691
+  },
+  {
+    "file": "research/manifests/main.json",
+    "added": 792,
+    "removed": 0
+  },
+  {
+    "file": "research/manifests/pilot.json",
+    "added": 640,
+    "removed": 0
+  },
+  {
+    "file": "research/manifests/runtime.json",
+    "added": 19,
+    "removed": 0
+  },
+  {
+    "file": "research/processed/analysis.json",
+    "added": 188,
+    "removed": 0
+  },
+  {
+    "file": "research/processed/condition_summary.csv",
+    "added": 216,
+    "removed": 0
+  },
+  {
+    "file": "research/processed/effects.csv",
+    "added": 173,
+    "removed": 0
+  },
+  {
+    "file": "research/processed/effects.json",
+    "added": 4990,
+    "removed": 0
+  },
+  {
+    "file": "research/processed/per_run.csv",
+    "added": 41,
+    "removed": 0
+  },
+  {
+    "file": "research/processed/survivor_delays.csv",
+    "added": 25,
+    "removed": 0
+  },
+  {
+    "file": "research/protocol/main_lock.json",
+    "added": 11,
+    "removed": 0
+  },
+  {
+    "file": "research/protocol/pilot_summary.json",
+    "added": 77,
+    "removed": 0
+  },
+  {
+    "file": "research/protocol/preregistered_v1.md",
+    "added": 82,
+    "removed": 0
+  },
+  {
+    "file": "research/protocol/question_audit.md",
+    "added": 14,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41001.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41001.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41001_files/mission_metrics_seed41001_62c8da9472ea424f94107d49051c9efb.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41001_files/mission_metrics_seed41001_62c8da9472ea424f94107d49051c9efb.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41001_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41002.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41002.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41002_files/mission_metrics_seed41002_ed4a05c149174419b19ac9322b960662.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41002_files/mission_metrics_seed41002_ed4a05c149174419b19ac9322b960662.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41002_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41003.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41003.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41003_files/mission_metrics_seed41003_5e8a97f26c6041b4815d24273ccc36bd.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41003_files/mission_metrics_seed41003_5e8a97f26c6041b4815d24273ccc36bd.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41003_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41004.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41004.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41004_files/mission_metrics_seed41004_da8f4863ff4a4ede91f4b98eccb0ad62.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41004_files/mission_metrics_seed41004_da8f4863ff4a4ede91f4b98eccb0ad62.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41004_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41005.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41005.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41005_files/mission_metrics_seed41005_682bab1e31874085ab5cd5da29d7948f.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41005_files/mission_metrics_seed41005_682bab1e31874085ab5cd5da29d7948f.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41005_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41006.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41006.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41006_files/mission_metrics_seed41006_3648c4647de64470bd3e6efd61b0b657.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41006_files/mission_metrics_seed41006_3648c4647de64470bd3e6efd61b0b657.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41006_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41007.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41007.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41007_files/mission_metrics_seed41007_f3f765981a464fef9a007da367093dff.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41007_files/mission_metrics_seed41007_f3f765981a464fef9a007da367093dff.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41007_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41008.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41008.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41008_files/mission_metrics_seed41008_2e01694303344f07b06be734b22b34e6.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41008_files/mission_metrics_seed41008_2e01694303344f07b06be734b22b34e6.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_360_seed41008_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41001.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41001.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41001_files/mission_metrics_seed41001_97978555dad2488ab01a28c263639e59.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41001_files/mission_metrics_seed41001_97978555dad2488ab01a28c263639e59.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41001_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41002.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41002.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41002_files/mission_metrics_seed41002_6344a162c3ee4e288923a68c6d26fe30.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41002_files/mission_metrics_seed41002_6344a162c3ee4e288923a68c6d26fe30.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41002_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41003.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41003.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41003_files/mission_metrics_seed41003_95d1137e483c4c9190e70fde99fbb61f.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41003_files/mission_metrics_seed41003_95d1137e483c4c9190e70fde99fbb61f.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41003_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41004.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41004.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41004_files/mission_metrics_seed41004_e99d6b5324b34621a7eab419f5a31c6b.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41004_files/mission_metrics_seed41004_e99d6b5324b34621a7eab419f5a31c6b.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41004_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41005.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41005.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41005_files/mission_metrics_seed41005_eada0b523473429182c5902a5ce30bec.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41005_files/mission_metrics_seed41005_eada0b523473429182c5902a5ce30bec.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41005_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41006.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41006.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41006_files/mission_metrics_seed41006_43892a174f8142dca74f79f9aed5a182.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41006_files/mission_metrics_seed41006_43892a174f8142dca74f79f9aed5a182.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41006_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41007.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41007.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41007_files/mission_metrics_seed41007_26505be3f90b45b5afbcb1fa61a70b5a.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41007_files/mission_metrics_seed41007_26505be3f90b45b5afbcb1fa61a70b5a.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41007_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41008.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41008.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41008_files/mission_metrics_seed41008_cc48ef8e2549432fa35806f7ba15d67e.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41008_files/mission_metrics_seed41008_cc48ef8e2549432fa35806f7ba15d67e.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/range_90_seed41008_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41001.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41001.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41001_files/mission_metrics_seed41001_aa89c0a4f5dd4d18b5251fdeb5bcd5e7.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41001_files/mission_metrics_seed41001_aa89c0a4f5dd4d18b5251fdeb5bcd5e7.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41001_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41002.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41002.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41002_files/mission_metrics_seed41002_c4cfe53f8b234be3925f596b73fdf016.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41002_files/mission_metrics_seed41002_c4cfe53f8b234be3925f596b73fdf016.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41002_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41003.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41003.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41003_files/mission_metrics_seed41003_a2937589f4f34136a52cb27736a0604d.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41003_files/mission_metrics_seed41003_a2937589f4f34136a52cb27736a0604d.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41003_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41004.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41004.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41004_files/mission_metrics_seed41004_ad09dbf1e4ea40a69ca1713fe7d37006.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41004_files/mission_metrics_seed41004_ad09dbf1e4ea40a69ca1713fe7d37006.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41004_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41005.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41005.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41005_files/mission_metrics_seed41005_3421a771bf3f4ab8ba2d7031f4ef58a1.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41005_files/mission_metrics_seed41005_3421a771bf3f4ab8ba2d7031f4ef58a1.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41005_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41006.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41006.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41006_files/mission_metrics_seed41006_cc2dec6e89cf4f5296c676d5ebe3c201.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41006_files/mission_metrics_seed41006_cc2dec6e89cf4f5296c676d5ebe3c201.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41006_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41007.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41007.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41007_files/mission_metrics_seed41007_56a1121ac0b44d49a8283fe09e150b3b.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41007_files/mission_metrics_seed41007_56a1121ac0b44d49a8283fe09e150b3b.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41007_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41008.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41008.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41008_files/mission_metrics_seed41008_c9c0bc43a52c4116b9acd0adfd8add9a.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41008_files/mission_metrics_seed41008_c9c0bc43a52c4116b9acd0adfd8add9a.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/reference_seed41008_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41001.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41001.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41001_files/mission_metrics_seed41001_ffe0ec6485864f58828601bfa3a72a60.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41001_files/mission_metrics_seed41001_ffe0ec6485864f58828601bfa3a72a60.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41001_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41002.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41002.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41002_files/mission_metrics_seed41002_fdda3dd4d7314d46a2824e8a67b2b54a.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41002_files/mission_metrics_seed41002_fdda3dd4d7314d46a2824e8a67b2b54a.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41002_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41003.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41003.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41003_files/mission_metrics_seed41003_33c4c53b5924494faa0277de78d1bdcf.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41003_files/mission_metrics_seed41003_33c4c53b5924494faa0277de78d1bdcf.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41003_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41004.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41004.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41004_files/mission_metrics_seed41004_5db0949c18e44b1d8a102d6cff018d07.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41004_files/mission_metrics_seed41004_5db0949c18e44b1d8a102d6cff018d07.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41004_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41005.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41005.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41005_files/mission_metrics_seed41005_50fb6f3909a644a9a668482597601e1c.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41005_files/mission_metrics_seed41005_50fb6f3909a644a9a668482597601e1c.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41005_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41006.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41006.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41006_files/mission_metrics_seed41006_b79bf9bfd17b4cb6a95125624e27fa9c.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41006_files/mission_metrics_seed41006_b79bf9bfd17b4cb6a95125624e27fa9c.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41006_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41007.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41007.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41007_files/mission_metrics_seed41007_0121f10cfd464a3f8a96d3da7fa0b521.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41007_files/mission_metrics_seed41007_0121f10cfd464a3f8a96d3da7fa0b521.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41007_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41008.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41008.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41008_files/mission_metrics_seed41008_0b87d66198404519bfe493d99a2c2704.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41008_files/mission_metrics_seed41008_0b87d66198404519bfe493d99a2c2704.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_16_seed41008_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41001.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41001.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41001_files/mission_metrics_seed41001_a9212bc00e154869ade81fd5f01b0954.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41001_files/mission_metrics_seed41001_a9212bc00e154869ade81fd5f01b0954.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41001_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41002.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41002.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41002_files/mission_metrics_seed41002_c884eb58494b4c06aa1381ff4bb5d18f.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41002_files/mission_metrics_seed41002_c884eb58494b4c06aa1381ff4bb5d18f.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41002_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41003.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41003.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41003_files/mission_metrics_seed41003_b560fe3ec1b54600b59a0b5e45bf214b.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41003_files/mission_metrics_seed41003_b560fe3ec1b54600b59a0b5e45bf214b.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41003_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41004.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41004.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41004_files/mission_metrics_seed41004_a4eeaf896f7940268fd6edb5d9be3e89.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41004_files/mission_metrics_seed41004_a4eeaf896f7940268fd6edb5d9be3e89.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41004_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41005.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41005.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41005_files/mission_metrics_seed41005_b28c3d9ed1654b34bbc8991afcbf8f5b.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41005_files/mission_metrics_seed41005_b28c3d9ed1654b34bbc8991afcbf8f5b.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41005_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41006.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41006.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41006_files/mission_metrics_seed41006_8b7627db6b5045289085ecc1e816fd9a.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41006_files/mission_metrics_seed41006_8b7627db6b5045289085ecc1e816fd9a.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41006_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41007.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41007.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41007_files/mission_metrics_seed41007_4a8349e256694416a5a1e88ec9fa432b.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41007_files/mission_metrics_seed41007_4a8349e256694416a5a1e88ec9fa432b.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41007_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41008.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41008.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41008_files/mission_metrics_seed41008_51a18e549b5446209d52dd248142101b.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41008_files/mission_metrics_seed41008_51a18e549b5446209d52dd248142101b.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/main/swarm_4_seed41008_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/range_360_seed49001.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/range_360_seed49001.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/range_360_seed49001_files/mission_metrics_seed49001_fa3731f93be4435cab9ccea92d3dcb26.csv",
+    "added": 11,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/range_360_seed49001_files/mission_metrics_seed49001_fa3731f93be4435cab9ccea92d3dcb26.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/range_360_seed49001_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/range_90_seed49001.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/range_90_seed49001.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/range_90_seed49001_files/mission_metrics_seed49001_e086a047f5f04c5a81773b567b56a6d4.csv",
+    "added": 11,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/range_90_seed49001_files/mission_metrics_seed49001_e086a047f5f04c5a81773b567b56a6d4.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/range_90_seed49001_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/reference_seed49001.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/reference_seed49001.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/reference_seed49001_files/mission_metrics_seed49001_b53f322925a443bdbc6872201f1f084e.csv",
+    "added": 11,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/reference_seed49001_files/mission_metrics_seed49001_b53f322925a443bdbc6872201f1f084e.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/reference_seed49001_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/reference_seed49002.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/reference_seed49002.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/reference_seed49002_files/mission_metrics_seed49002_b46089e9b1ad4cb8943e412a0bae36f9.csv",
+    "added": 11,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/reference_seed49002_files/mission_metrics_seed49002_b46089e9b1ad4cb8943e412a0bae36f9.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/reference_seed49002_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_16_seed49001.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_16_seed49001.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_16_seed49001_files/mission_metrics_seed49001_ca0d857194ff42969c209f3c52d4b8c3.csv",
+    "added": 11,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_16_seed49001_files/mission_metrics_seed49001_ca0d857194ff42969c209f3c52d4b8c3.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_16_seed49001_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_16_seed49002.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_16_seed49002.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_16_seed49002_files/mission_metrics_seed49002_701c7a94e28a4daabdcc2f90368dd936.csv",
+    "added": 11,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_16_seed49002_files/mission_metrics_seed49002_701c7a94e28a4daabdcc2f90368dd936.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_16_seed49002_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_4_seed49001.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_4_seed49001.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_4_seed49001_files/mission_metrics_seed49001_62629f9d18aa45f5b1a82ba546e8019f.csv",
+    "added": 11,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_4_seed49001_files/mission_metrics_seed49001_62629f9d18aa45f5b1a82ba546e8019f.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/pilot/swarm_4_seed49001_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/repeat/reference_seed41001.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/repeat/reference_seed41001.sha256",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/repeat/reference_seed41001_files/mission_metrics_seed41001_335843d82a414cd493e7fa12f2a6f4df.csv",
+    "added": 16,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/repeat/reference_seed41001_files/mission_metrics_seed41001_335843d82a414cd493e7fa12f2a6f4df.csv.metadata.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/raw/repeat/reference_seed41001_files/research_write_timing.json",
+    "added": 1,
+    "removed": 0
+  },
+  {
+    "file": "research/README.md",
+    "added": 54,
+    "removed": 0
+  },
+  {
+    "file": "research/tables/main_results.md",
+    "added": 34,
+    "removed": 0
+  }
+]

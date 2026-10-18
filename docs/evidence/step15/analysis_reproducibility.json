@@ -1,0 +1,18 @@
+{
+  "byte_identical": true,
+  "files": {
+    "research/processed/analysis.json": "d909d26d0d95648136ea7575ccea52a5e18182fa162360939c166cfa14d6487c",
+    "research/processed/condition_summary.csv": "b688a51541ad48a62aea1a9a5a5ec548f3f70902325ad7e76d31e7e0dd8b4818",
+    "research/processed/effects.csv": "55b22025ae1b932eff7320a32a3ce0effc4dbeb0417205a72f48d523b2edfe66",
+    "research/processed/effects.json": "cf3933e1d8b2623292ad0cbae771512f9a1875660d30201feacc87be5a4f8f33",
+    "research/processed/per_run.csv": "1e15fd8399b1fbb2344fb5fff344f18f2367804c3eb03ffb9db51ce88c0ece8c",
+    "research/processed/survivor_delays.csv": "05db2d294570d079c9bdd89d397f9896282f33474baca4b774b9507550e4e8f8",
+    "research/figures/coverage_effects.pdf": "82ffd9b26521f530324ebaf9588fea2119f8df9e0f25d27b71426241025cb899",
+    "research/figures/coverage_effects.png": "3ac7696769c35352236ae86a3dd418ad596ba797adb8d83007b67f4cec443a07",
+    "research/figures/coverage_effects.svg": "49991c6512ab045739dd9acd6b3be5e368c2d5311488711ca44d65af5927372d",
+    "research/figures/paired_outcomes.pdf": "6c608191fccde47348df54ef0e715cfd2099bfbb5afab1c3b78b62c1e01543b7",
+    "research/figures/paired_outcomes.png": "61e700036969fbbb3811bcc426a79a6ecfcc1a43f452dd7dc24ef74a3b3c4cfd",
+    "research/figures/paired_outcomes.svg": "8e883f09607c77bc20eef35e9b5bfe0e2bddf5973c05a57b3d23c0d4f8b986c4"
+  },
+  "simulation_rng_used": false
+}

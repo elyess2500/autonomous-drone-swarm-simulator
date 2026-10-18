@@ -1,0 +1,132 @@
+{
+  "status": "complete",
+  "source_files_verified": 69,
+  "frozen_files_verified": 52,
+  "production_files_unchanged": 25,
+  "original_test_functions_unchanged": 206,
+  "step11_evidence_files_unchanged": 115,
+  "tests": 313,
+  "full_suite_failures": 0,
+  "smoke_output_exactly_matches_baseline": true,
+  "presentation_matches_step11": true,
+  "golden_repeat_seeds": [
+    2026,
+    2027,
+    2031
+  ],
+  "golden_repeat_ticks": 60,
+  "hosted_ci_verified": false,
+  "linux_runtime_verified": false,
+  "git_diff_check_exit": 0,
+  "scoped_whitespace": "passed after line-ending normalization",
+  "report_sections": 58,
+  "scoped_diff": {
+    ".github/workflows/heavy.yml": {
+      "additions": 55,
+      "deletions": 0
+    },
+    ".github/workflows/reliability.yml": {
+      "additions": 85,
+      "deletions": 0
+    },
+    ".gitignore": {
+      "additions": 1,
+      "deletions": 0
+    },
+    ".python-version": {
+      "additions": 1,
+      "deletions": 0
+    },
+    "README.md": {
+      "additions": 18,
+      "deletions": 14
+    },
+    "constraints-test.txt": {
+      "additions": 6,
+      "deletions": 0
+    },
+    "docs/step12_engineering_report.md": {
+      "additions": 343,
+      "deletions": 0
+    },
+    "docs/validation.md": {
+      "additions": 204,
+      "deletions": 0
+    },
+    "pytest.ini": {
+      "additions": 7,
+      "deletions": 0
+    },
+    "requirements-test.txt": {
+      "additions": 4,
+      "deletions": 0
+    },
+    "requirements.txt": {
+      "additions": 4,
+      "deletions": 2
+    },
+    "tests/battery_docking_tests.py": {
+      "additions": 8,
+      "deletions": 2
+    },
+    "tests/conftest.py": {
+      "additions": 64,
+      "deletions": 0
+    },
+    "tests/gameplay_smoke.py": {
+      "additions": 11,
+      "deletions": 4
+    },
+    "tests/golden/step11-v1/2026.json.gz": {
+      "binary_bytes": 138843
+    },
+    "tests/golden/step11-v1/2027.json.gz": {
+      "binary_bytes": 138743
+    },
+    "tests/golden/step11-v1/2031.json.gz": {
+      "binary_bytes": 138827
+    },
+    "tests/golden/step11-v1/manifest.json": {
+      "additions": 63,
+      "deletions": 0
+    },
+    "tests/golden/step11-v1/reference.zip": {
+      "binary_bytes": 108967
+    },
+    "tests/reliability_tests.py": {
+      "additions": 178,
+      "deletions": 0
+    },
+    "validation/__init__.py": {
+      "additions": 1,
+      "deletions": 0
+    },
+    "validation/differential.py": {
+      "additions": 169,
+      "deletions": 0
+    },
+    "validation/isolation.py": {
+      "additions": 46,
+      "deletions": 0
+    },
+    "validation/presentation.py": {
+      "additions": 35,
+      "deletions": 0
+    },
+    "validation/sanity.py": {
+      "additions": 70,
+      "deletions": 0
+    },
+    "validation/selection.py": {
+      "additions": 31,
+      "deletions": 0
+    },
+    "validation/test_contracts.json": {
+      "additions": 2370,
+      "deletions": 0
+    }
+  },
+  "step13_started": false,
+  "committed": false,
+  "pushed": false
+}

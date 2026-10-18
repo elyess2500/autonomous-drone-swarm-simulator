@@ -1,0 +1,15 @@
+local validation artifact UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_stream, resource_exists
+test_config_changes_only_intended_factor (experiments.test_step15.RunnerTests.test_config_changes_only_intended_factor) ... ok
+test_failure_is_preserved_and_reentry_blocked (experiments.test_step15.RunnerTests.test_failure_is_preserved_and_reentry_blocked) ... ok
+test_observer_repeat_resume_and_corruption (experiments.test_step15.RunnerTests.test_observer_repeat_resume_and_corruption) ... ok
+test_pairing_preserves_constant_effect (experiments.test_analysis_step15.AnalysisTests.test_pairing_preserves_constant_effect) ... ok
+test_relative_cli_input_provenance (experiments.test_analysis_step15.AnalysisTests.test_relative_cli_input_provenance) ... ok
+test_zero_effect_and_deterministic_resampling (experiments.test_analysis_step15.AnalysisTests.test_zero_effect_and_deterministic_resampling) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 2.352s
+
+OK
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.7)
+Hello from the pygame community. https://www.pygame.org/contribute.html

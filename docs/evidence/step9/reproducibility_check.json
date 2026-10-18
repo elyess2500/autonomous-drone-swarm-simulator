@@ -1,0 +1,28 @@
+{
+  "compared_fields": [
+    "state_hash",
+    "knowledge_hash",
+    "rng_hash",
+    "experiment_identity",
+    "accounting",
+    "metrics",
+    "summary",
+    "outcome",
+    "completion_reason"
+  ],
+  "before_after": {
+    "2026": [],
+    "2027": [],
+    "2031": []
+  },
+  "repeat_differences": [],
+  "matrix_differences": {
+    "headless_60": [],
+    "normal_60": [],
+    "normal_30": [],
+    "normal_144": [],
+    "reduced_60": [],
+    "overlays_off_60": [],
+    "noisy_60": []
+  }
+}

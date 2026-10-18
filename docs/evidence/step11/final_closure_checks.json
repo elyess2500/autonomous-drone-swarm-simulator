@@ -1,0 +1,43 @@
+{
+  "status": "complete",
+  "validated_source_files": 49,
+  "frozen_files": 47,
+  "changed_baseline_files": [
+    "core/energy.py"
+  ],
+  "profile_probe_ast_unchanged": true,
+  "old_step10_authoritative_matches_fresh_baseline": true,
+  "complete_suite": "302 passed",
+  "smoke_ticks": 10800,
+  "differential": "3 seeds x 3601 tick states x 15 groups; 13 detailed checkpoints each",
+  "replay_csv_equal": true,
+  "seed2026_repeat_equal": true,
+  "presentation_conditions_equal": 7,
+  "scaling_drones": [
+    8,
+    16,
+    32
+  ],
+  "git_diff_check_exit": 0,
+  "scoped_whitespace_check": "passed",
+  "report_sections": 47,
+  "report_lines": 468,
+  "scoped_code_diff": {
+    "core/energy.py": {
+      "additions": 44,
+      "deletions": 3
+    },
+    "benchmarks/step11.py": {
+      "additions": 195,
+      "deletions": 0
+    },
+    "tests/performance_tests.py": {
+      "additions": 177,
+      "deletions": 0
+    }
+  },
+  "source_manifest": "validated_source_hashes.json",
+  "artifact_manifest": "final_artifact_hashes.json",
+  "production_changes_during_closure": false,
+  "step12_started": false
+}

@@ -1,0 +1,31 @@
+..............................                                           [100%]
+============================== warnings summary ===============================
+..\..\..\.codex\visualizations\2026\09\18\01a0b1ff-7e58-78a2-8471-ee5373358d93\step12_venv\Lib\site-packages\pygame\pkgdata.py:25
+  local validation artifact UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+    from pkg_resources import resource_stream, resource_exists
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=================================== PASSES ====================================
+- generated xml file: local validation artifact -
+============================ slowest 20 durations =============================
+15.38s call     tests/headless_tests.py::test_sequential_headless_seeds_and_config_context_do_not_leak
+4.26s call     tests/headless_tests.py::test_cold_engine_inspection_csv_replay_and_clean_termination
+3.69s call     tests/reliability_tests.py::test_bounded_golden_and_repeat
+3.53s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[normal-30]
+3.43s call     tests/headless_tests.py::test_existing_execution_does_not_need_graphical_initialization
+3.40s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[normal-144]
+3.33s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[normal-60]
+3.31s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[noisy-60]
+3.29s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[delayed-60]
+2.26s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[overlays_off-60]
+2.12s call     tests/experiment_tests.py::test_interleaved_experiments_and_exception_restore_configuration
+2.12s call     tests/experiment_tests.py::test_presentation_does_not_change_simulation[reduced-60]
+1.87s call     tests/accounting_tests.py::test_event_order_and_metrics_independent_of_presentation
+1.80s call     tests/headless_tests.py::test_display_rendering_is_observer_and_matches_headless[noisy-60]
+1.78s call     tests/headless_tests.py::test_display_rendering_is_observer_and_matches_headless[normal-30]
+1.76s call     tests/headless_tests.py::test_display_rendering_is_observer_and_matches_headless[normal-60]
+1.74s call     tests/headless_tests.py::test_display_rendering_is_observer_and_matches_headless[normal-144]
+1.49s call     tests/headless_tests.py::test_display_rendering_is_observer_and_matches_headless[overlays_off-60]
+1.33s call     tests/headless_tests.py::test_display_rendering_is_observer_and_matches_headless[reduced-60]
+0.81s call     tests/reliability_tests.py::test_wrong_golden_tick_fails_and_preserves_reference_evidence
+30 passed, 283 deselected, 1 warning in 69.21s (0:01:09)

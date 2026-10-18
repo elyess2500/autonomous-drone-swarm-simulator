@@ -1,0 +1,12 @@
+........................................................................ [ 25%]
+........................................................................ [ 51%]
+........................................................................ [ 76%]
+..................................................................       [100%]
+============================== warnings summary ===============================
+..\..\..\.codex\visualizations\2026\09\18\01a0b1ff-7e58-78a2-8471-ee5373358d93\step12_venv\Lib\site-packages\pygame\pkgdata.py:25
+  local validation artifact UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+    from pkg_resources import resource_stream, resource_exists
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: local validation artifact -
+282 passed, 54 deselected, 1 warning in 44.28s

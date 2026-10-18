@@ -63,7 +63,7 @@ DEMO_SURVIVOR_DETECTION_BONUS = 8      # extra generous demo detection
 # BATTERY
 # ──────────────────────────────────────────────
 BATTERY_MAX           = 100.0
-BATTERY_IDLE_DRAIN    = 0.008          # per frame while idle / charging
+BATTERY_IDLE_DRAIN    = 0.008          # per tick idle drain; docked top-up bypasses drain
 BATTERY_MOVE_DRAIN    = 0.030          # per frame while moving
 BATTERY_SCAN_DRAIN    = 0.012          # per frame while scanning
 BATTERY_LOW_THRESH    = 35.0           # trigger return-to-base
@@ -72,7 +72,7 @@ BATTERY_CHARGE_RATE   = 0.75           # per frame at base
 BATTERY_RELAUNCH_THRESH = 85.0         # relaunch only after safe recharge
 BATTERY_EMERGENCY_CHARGE_RATE = 2.0    # used when entire swarm is stalled
 BATTERY_TASK_RESERVE = 18.0            # safety reserve after target + return estimate
-BATTERY_PATH_INEFFICIENCY = 1.45       # multiplier for path detours/wind/avoidance
+BATTERY_PATH_INEFFICIENCY = 1.45       # uncertainty multiplier on modeled route + work charge
 
 # ──────────────────────────────────────────────
 # PATHFINDING

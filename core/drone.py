@@ -17,10 +17,12 @@ import random
 import numpy as np
 import pygame
 
-import config
+from core.experiment import settings as config
 from core.battery import Battery
-from core.communication import CommNode
+from core.energy import EnergyPolicy
+from core.communication import CommNode, radio_enabled
 from core.pathfinding import find_path, smooth_path
+from core.geometry import segment_is_clear, motion_step
 from core.utils import pulse
 
 # State identifiers
@@ -64,12 +66,14 @@ class Drone:
         from core.map import Map
         self.drone_id: int   = drone_id
         self.game_map        = game_map
+        initial_rng = game_map.experiment.stream('initialization', drone_id)
+        self.failure_rng = game_map.experiment.stream('failure', drone_id)
 
         # ── World position (pixels) ──────────────
         base_px, base_py = game_map.cell_to_pixel(config.BASE_COL, config.BASE_ROW)
         # Slight random scatter around base so drones don't stack
-        self.px: float = base_px + random.uniform(-8, 8)
-        self.py: float = base_py + random.uniform(-8, 8)
+        self.px: float = base_px + initial_rng.uniform(-8, 8)
+        self.py: float = base_py + initial_rng.uniform(-8, 8)
         self.vx: float = 0.0
         self.vy: float = 0.0
 
@@ -78,7 +82,7 @@ class Drone:
         self.prev_state: str = IDLE
 
         # ── Battery & Comms ──────────────────────
-        self.battery  = Battery(initial=random.uniform(70, 100))
+        self.battery  = Battery(initial=initial_rng.uniform(70, 100))
         self.comm     = CommNode(drone_id)
         self.last_comm_safe_cell: tuple[int, int] = (config.BASE_COL, config.BASE_ROW)
         self.lost_comm_frames = 0
@@ -141,6 +145,8 @@ class Drone:
         # ── Path re-route timer ──────────────────
         self._reroute_timer = 0
         self._stuck_frames = 0
+        self._last_progress_position = None
+        self._task_owner = None
         self._last_goal_distance: float | None = None
         self._last_stuck_alert_frame = -9999
         self.stuck_recoveries = 0
@@ -153,6 +159,11 @@ class Drone:
         # ── Misc ─────────────────────────────────
         self.alerts: list[str] = []   # short alert strings for the dashboard
         self.mission_found: list[int] = []
+        self.energy = EnergyPolicy(self)
+        self._energy_weather = "Clear"
+        self._energy_signature = None
+        self._energy_checked_frame = -config.REROUTE_INTERVAL
+        self._ready_at_base = False
 
     # ──────────────────────────────────────────
     # Properties / helpers
@@ -175,10 +186,57 @@ class Drone:
     def distance_to_px(self, x: float, y: float) -> float:
         return math.hypot(self.px - x, self.py - y)
 
+    def _event(self, kind, subject=None, reason="", **payload):
+        if self._task_owner is not None:
+            self._task_owner.accounting.emit(kind, self.drone_id, subject, reason, **payload)
+
+    def _search_path(self, *args, **kwargs):
+        self._event("path_search")
+        return find_path(*args, **kwargs)
+
     def set_state(self, new_state: str):
         if self.state != new_state:
+            self._yield_target = None
+            if new_state in (RETURNING, CHARGING, FAILED, STRANDED):
+                self._cancel_task(new_state)
             self.prev_state = self.state
             self.state = new_state
+            self._event("state_transition", new_state, self.prev_state)
+            events = {FAILED: "hardware_failure", STRANDED: "stranded",
+                      LOST_COMM: "lost_comm_entry", CHARGING: "charging_started",
+                      RETURNING: "return_started"}
+            if new_state in events:
+                self._event(events[new_state])
+            if self.prev_state == CHARGING and new_state == IDLE and self.battery.level >= config.BATTERY_RELAUNCH_THRESH:
+                self._event("charging_completed", reason="relaunch threshold reached")
+                self._relaunch_pending = True
+                self._ready_at_base = True
+            if new_state != IDLE:
+                self.battery.stop_charging()
+            if new_state == CHARGING:
+                self.battery.start_charging()
+            if new_state in (FAILED, STRANDED):
+                self._relaunch_pending = False
+                self._ready_at_base = False
+            if self.prev_state == LOST_COMM and self.comm.is_connected:
+                self._event("lost_comm_recovery")
+
+    def _cancel_task(self, reason: str):
+        if self._task_owner is not None:
+            self._task_owner._release_assignment(self, reason)
+        else:
+            self.scan_queue.clear()
+            self.current_frontier_id = self.current_frontier_cell = None
+            self.assigned_sector = None
+            self.path.clear()
+
+    def _complete_task(self):
+        if self._task_owner is not None:
+            self._task_owner._complete_assignment(self)
+        else:
+            self.completed_frontier_id = self.current_frontier_id
+            self.current_frontier_id = self.current_frontier_cell = None
+            self.needs_frontier_reassign = True
 
     def is_in_docking_zone(self) -> bool:
         """True only inside the physical base zone where charging is allowed."""
@@ -232,48 +290,51 @@ class Drone:
 
     def estimate_return_energy(self, col: int | None = None, row: int | None = None,
                                reserve: float = 0.0) -> float:
-        """Estimate battery needed to fly from a cell back to the base dock."""
-        if col is None or row is None:
-            col, row = self.cell
-        to_base_cells = math.hypot(col - config.BASE_COL, row - config.BASE_ROW)
-        pixels = to_base_cells * config.CELL_SIZE
-        frames = pixels / max(0.1, config.DRONE_SPEED)
-        return frames * config.BATTERY_MOVE_DRAIN * config.BATTERY_PATH_INEFFICIENCY + reserve
+        """Pure charge-unit route query; unavailable routes cost infinity."""
+        source = (col, row) if col is not None and row is not None else None
+        estimate = self.energy.estimate(from_cell=source)
+        return estimate.returning + estimate.uncertainty + reserve
 
     def has_safe_return_energy(self, col: int | None = None, row: int | None = None) -> bool:
-        return self.battery.level >= self.estimate_return_energy(
-            col, row, config.BATTERY_TASK_RESERVE
-        )
+        source = (col, row) if col is not None and row is not None else None
+        return self.battery.level >= self.energy.estimate(record=True, from_cell=source).total
 
     def estimate_task_energy(self, col: int, row: int) -> float:
-        """Estimate battery needed to reach a cell, do useful work, and RTB."""
-        dc, dr = self.cell
-        to_target_cells = math.hypot(col - dc, row - dr)
-        to_base_cells = math.hypot(col - config.BASE_COL, row - config.BASE_ROW)
-        pixels = (to_target_cells + to_base_cells) * config.CELL_SIZE
-        frames = pixels / max(0.1, config.DRONE_SPEED)
-        travel = frames * config.BATTERY_MOVE_DRAIN * config.BATTERY_PATH_INEFFICIENCY
-        scan_work = config.DRONE_SCAN_INTERVAL * config.BATTERY_SCAN_DRAIN * 4
-        return travel + scan_work + config.BATTERY_TASK_RESERVE
+        """Pure next-waypoint + work + terrain return + reserve query."""
+        return self.energy.estimate((col, row)).total
 
-    def can_accept_task(self, col: int, row: int) -> bool:
+    def can_accept_task(self, col: int, row: int, *, hold_ticks=None) -> bool:
         if self.state in (FAILED, STRANDED, CHARGING, RETURNING):
             return False
         if self.battery.should_return():
             return False
-        return self.battery.level >= self.estimate_task_energy(col, row)
+        return self.battery.level >= self.energy.estimate((col, row), record=True, hold_ticks=hold_ticks).total
+
+    def prepare_energy_route(self, target, others, reservation_table=None, *, hold_ticks=None):
+        """Validate the real planned first leg before changing task ownership."""
+        if self.state in (FAILED, STRANDED, CHARGING, RETURNING):
+            return None
+        if not self.can_accept_task(*target, hold_ticks=hold_ticks):
+            self._event('energy_rejected', reason='assignment reserve or route', target=list(target))
+            return None
+        old = self.path, self.waypoint_idx, self.target_cell
+        try:
+            self.plan_path_to(*target, others, reservation_table)
+            if not self.path or self.path[-1] != tuple(target) or not self.can_accept_task(*target, hold_ticks=hold_ticks):
+                self._event('energy_rejected', reason='planned route reserve or unavailable', target=list(target))
+                return None
+            return list(self.path)
+        finally:
+            self.path, self.waypoint_idx, self.target_cell = old
 
     def task_energy_reason(self, col: int, row: int) -> str:
+        if self.battery.should_return():
+            return f"low-charge guard {config.BATTERY_LOW_THRESH:.0f}, have {self.battery.level:.0f}"
         need = self.estimate_task_energy(col, row)
         return f"need {need:.0f}, have {self.battery.level:.0f}"
 
     def _has_return_path_from(self, col: int, row: int) -> bool:
-        bc, br = self.base_target_cell
-        return bool(find_path(self.game_map, col, row, bc, br,
-                              ai_seed=self.ai_seed,
-                              drone_id=self.drone_id,
-                              direction_bias=self.direction_bias,
-                              randomness=config.AI_RANDOMNESS))
+        return math.isfinite(self.estimate_return_energy(col, row))
 
     def _can_continue_offline_task(self) -> bool:
         if not getattr(config, "AUTONOMOUS_OFFLINE_MODE", False):
@@ -285,16 +346,14 @@ class Drone:
         target_col, target_row = self.scan_queue[0]
         if not self.game_map.is_passable(target_col, target_row):
             return False
-        if self.battery.level < self.estimate_task_energy(target_col, target_row):
-            return False
-        return self._has_return_path_from(target_col, target_row)
+        return self.can_accept_task(target_col, target_row)
 
     def _is_offline_autonomous(self) -> bool:
         return self.state == LOST_COMM and self.offline_autonomous_active
 
     def _is_offline_disconnected(self) -> bool:
-        return (getattr(config, "AUTONOMOUS_OFFLINE_MODE", False) and
-                self.state == LOST_COMM)
+        # Delivery is physical, independently of grace/behavior/offline policy.
+        return not (radio_enabled(self) and self.comm.is_connected)
 
     def _comm_anchor_cells(self, others=None) -> list[tuple[int, int]]:
         anchors = [(config.BASE_COL, config.BASE_ROW)]
@@ -320,7 +379,7 @@ class Drone:
             for d in others
             if d.drone_id != self.drone_id and d.has_path()
         ] if others else []
-        raw = find_path(self.game_map, sc, sr, col, row,
+        raw = self._search_path(self.game_map, sc, sr, col, row,
                         other_drone_positions=other_cells,
                         other_drone_paths=other_paths,
                         ai_seed=self.ai_seed,
@@ -405,6 +464,13 @@ class Drone:
 
     def accept_frontier_task(self, frontier, work_cells: list[tuple[int, int]],
                              others: list, reservation_table=None):
+        cells = work_cells or [frontier.cell]
+        planned = self.prepare_energy_route(cells[0], others, reservation_table)
+        if planned is None:
+            return False
+        if self._task_owner is not None:
+            self._task_owner._claim_assignment(self, "frontier", frontier.frontier_id,
+                                               work_cells or [frontier.cell])
         self.current_frontier_id = frontier.frontier_id
         self.current_frontier_cell = frontier.cell
         self.assigned_sector = None
@@ -414,17 +480,33 @@ class Drone:
         self.waypoint_idx = 0
         self.set_state(SCANNING)
         self.decision = f"accepted frontier {frontier.frontier_id} gain={frontier.info_gain}"
-        first_col, first_row = self.scan_queue[0]
-        self.plan_path_to(first_col, first_row, others, reservation_table)
+        self.path = planned
+        self.target_cell = self.scan_queue[0]
+        return True
 
     # ──────────────────────────────────────────
     # Main update tick
     # ──────────────────────────────────────────
 
-    def update(self, frame: int, weather: str, all_drones: list, reservation_table=None):
+    def update(self, frame: int, weather: str, all_drones: list, reservation_table=None,
+               *, defer_sensing: bool = False):
         """Called once per simulation frame."""
+        self._energy_weather = weather
+        signature = (self.cell, weather, tuple(self.path[self.waypoint_idx:]),
+                     tuple(self.scan_queue[:1]), getattr(self, '_yield_target', None),
+                     self.game_map.grid.tobytes())
+        self._energy_due = (signature != self._energy_signature or
+                            frame - self._energy_checked_frame >= config.REROUTE_INTERVAL)
+        if self._energy_due:
+            self._energy_signature = signature
+            self._energy_checked_frame = frame
+        self._motion_table = reservation_table
+        if reservation_table is not None and reservation_table.frame != frame:
+            reservation_table.begin_tick(frame, all_drones)
         if self.offline_sync_flash_frames > 0:
             self.offline_sync_flash_frames -= 1
+        if not defer_sensing:
+            self._sync_offline_discoveries()
 
         if self.state == FAILED:
             self._tick_failed()
@@ -454,6 +536,10 @@ class Drone:
             return
 
         # ── Battery drain ────────────────────────
+        if self._ready_at_base and self.state == IDLE and self.can_charge_here():
+            self.battery.start_charging()  # Ready waiting is docked top-up, not a new episode.
+        elif self.state != CHARGING:
+            self.battery.stop_charging()
         if self.state != CHARGING:
             self.battery.update(self.state, in_storm=in_storm, in_wind=in_wind)
 
@@ -476,17 +562,17 @@ class Drone:
         if self.comm.is_lost and self.state != CHARGING:
             if self.state != LOST_COMM:
                 self._enter_lost_comm(all_drones, reservation_table)
-        elif self.state == LOST_COMM and not self.comm.is_lost:
-            self._recover_comm_link(all_drones)
+        elif self.state == LOST_COMM and self.comm.is_connected:
+            self._recover_comm_link(all_drones, synchronize=not defer_sensing)
 
         # ── Low battery: force return ────────────
         if (self.state not in (RETURNING, CHARGING, LOST_COMM) and
-                (self.battery.should_return() or not self.has_safe_return_energy())):
-            self._initiate_return(all_drones)
+                (self.battery.should_return() or (self._energy_due and not self.has_safe_return_energy()))):
+            self._energy_return(all_drones)
 
         # ── Random failure ──────────────────────
         if (self.state not in (FAILED, STRANDED, CHARGING) and
-                random.random() < config.FAILURE_PROB_PER_FRAME):
+                self.failure_rng.random() < config.FAILURE_PROB_PER_FRAME):
             self._trigger_failure()
             return
 
@@ -516,15 +602,8 @@ class Drone:
 
         self._tick_stuck_recovery(frame, all_drones, reservation_table)
 
-        # ── Scan the area around current cell ────
-        self._scan_timer += 1
-        if self._scan_timer >= config.DRONE_SCAN_INTERVAL:
-            self._scan_timer = 0
-            c, r = self.cell
-            if self._is_offline_disconnected():
-                self._scan_offline(c, r)
-            else:
-                self._scan_online(c, r)
+        if not defer_sensing:
+            self._tick_sensing()
 
         # ── Trail update ─────────────────────────
         self.trail.append((self.px, self.py))
@@ -542,28 +621,20 @@ class Drone:
     def _tick_scanning(self, frame: int, others: list, reservation_table=None):
         """Move to the next scan target in the queue."""
         if not self.scan_queue:
-            self.completed_frontier_id = self.current_frontier_id
-            self.current_frontier_id = None
-            self.current_frontier_cell = None
-            self.needs_frontier_reassign = True
+            self._complete_task()
             self.set_state(IDLE)
             self.decision = "frontier complete; requesting new task"
             return
 
         target_col, target_row = self.scan_queue[0]
 
-        if not self.can_accept_task(target_col, target_row):
+        if getattr(self, '_energy_due', True) and not self.can_accept_task(target_col, target_row):
             self.decision = f"task deferred; {self.task_energy_reason(target_col, target_row)}"
-            self.scan_queue.clear()
-            self.current_frontier_id = None
-            self.current_frontier_cell = None
-            self.needs_frontier_reassign = True
-            self._initiate_return(others)
+            self._energy_return(others)
             return
 
         # If we have arrived at the target, pop it
-        tc, tr = self.cell
-        if tc == target_col and tr == target_row:
+        if self._at_cell_center(target_col, target_row):
             self.scan_queue.pop(0)
             self.path.clear()
             self.decision = "scanned assigned frontier waypoint"
@@ -572,6 +643,9 @@ class Drone:
         # Plan path if needed
         if not self.has_path():
             self.plan_path_to(target_col, target_row, others, reservation_table)
+            if not self.can_accept_task(target_col, target_row):
+                self._energy_return(others)
+                return
 
         self._move_along_path()
 
@@ -583,7 +657,9 @@ class Drone:
         if self.battery.is_empty():
             self._strand("battery depleted before reaching dock")
             return
-        if self.distance_to_base() <= config.BASE_DOCKING_RADIUS_PX + config.PATH_WAYPOINT_DIST * 1.5:
+        if (getattr(self, '_yield_target', None) is None
+                and self.distance_to_base() <= config.BASE_DOCKING_RADIUS_PX + config.PATH_WAYPOINT_DIST * 1.5
+                and self._clear_segment_to(*self.base_px)):
             self.path.clear()
             self.target_cell = (config.BASE_COL, config.BASE_ROW)
             self.decision = "final docking approach"
@@ -594,7 +670,7 @@ class Drone:
         self._move_along_path()
 
     def _tick_charging(self):
-        """Charge at base; transition to IDLE when full."""
+        """Charge at base; IDLE is ready when the departure threshold is reached."""
         if not self.can_charge_here():
             self.battery.stop_charging()
             if self.battery.is_empty():
@@ -617,13 +693,33 @@ class Drone:
         self._stop()
         self.battery.stop_charging()
 
+    def _tick_sensing(self):
+        """Swarm calls after all motion and a fresh delivery graph snapshot."""
+        if self.state in (FAILED, STRANDED):
+            return
+        self._scan_timer += 1
+        if self._scan_timer >= config.DRONE_SCAN_INTERVAL:
+            self._scan_timer = 0
+            if self._is_offline_disconnected():
+                self._scan_offline(*self.cell)
+            else:
+                self._scan_online(*self.cell)
+
     def _scan_online(self, col: int, row: int):
+        if self._is_offline_disconnected():
+            self._scan_offline(col, row)
+            return
         self.game_map.scan_area(col, row, config.DRONE_SENSOR_RADIUS)
         cells = self.game_map.cells_in_radius(col, row, config.DRONE_SENSOR_RADIUS)
         self.map_known.update(cells)
+        # Local detection must not use globally known survivor IDs as an oracle.
+        for mz_idx in self.game_map.detect_mission_near(col, row, exclude_found=False):
+            if mz_idx not in self.mission_found:
+                self.mission_found.append(mz_idx)
+                self._event("survivor_local", mz_idx, "connected")
         found = self.game_map.check_mission_discovery(col, row)
         for mz_idx in found:
-            self.mission_found.append(mz_idx)
+            self._event("survivor_published", mz_idx, "online")
             self.alerts.append(f"D{self.drone_id}: SURVIVOR FOUND zone {mz_idx}!")
 
     def _append_offline_progress(self, collection: list[dict], item: dict):
@@ -648,9 +744,9 @@ class Drone:
             "path_remaining": max(0, len(self.path) - self.waypoint_idx),
         })
 
-        found = self.game_map.detect_mission_near(col, row)
+        found = self.game_map.detect_mission_near(col, row, exclude_found=False)
         for mz_idx in found:
-            if mz_idx in self.offline_survivor_found:
+            if mz_idx in self.mission_found:
                 continue
             mz = self.game_map.mission_zones[mz_idx]
             self.offline_survivor_found.add(mz_idx)
@@ -660,9 +756,13 @@ class Drone:
                 "detected_from": (col, row),
             }
             self.mission_found.append(mz_idx)
-            self.alerts.append(f"D{self.drone_id}: OFFLINE SURVIVOR DETECTED zone {mz_idx}")
+            self._event("survivor_local", mz_idx, "disconnected")
+            # Discovery alerts reach the dashboard through Swarm.alerts. Emit
+            # only on successful synchronization; local IDs/info stay buffered.
 
     def _sync_offline_discoveries(self) -> tuple[int, int]:
+        if self._is_offline_disconnected():
+            return 0, 0
         if not self.offline_known_cells and not self.offline_survivor_found:
             return 0, 0
         synced_cells = self.game_map.reveal_cells(self.offline_known_cells)
@@ -671,7 +771,11 @@ class Drone:
             if mz_idx not in self.game_map.mission_found:
                 self.game_map.mission_found.add(mz_idx)
                 synced_survivors += 1
+                self._event("survivor_published", mz_idx, "reconnect")
                 self.alerts.append(f"D{self.drone_id}: SYNCED SURVIVOR zone {mz_idx}")
+        self._event("discovery_upload", cells=synced_cells, survivors=synced_survivors,
+                    duplicate_cells=len(self.offline_known_cells)-synced_cells,
+                    duplicate_survivors=len(self.offline_survivor_found)-synced_survivors)
         self.offline_synced_cells += synced_cells
         self.offline_synced_survivors += synced_survivors
         self.offline_known_cells.clear()
@@ -724,8 +828,8 @@ class Drone:
             "lost comm recovery",
         )
 
-    def _recover_comm_link(self, others: list):
-        synced_cells, synced_survivors = self._sync_offline_discoveries()
+    def _recover_comm_link(self, others: list, *, synchronize: bool = True):
+        synced_cells, synced_survivors = self._sync_offline_discoveries() if synchronize else (0, 0)
         self.lost_comm_recoveries += 1
         self.last_comm_safe_cell = self.cell
         self.lost_comm_reason = "radio link restored"
@@ -737,7 +841,7 @@ class Drone:
         self.offline_rtb_no_comms = False
         self.path.clear()
         if self.battery.should_return() or not self.has_safe_return_energy():
-            self._initiate_return(others)
+            self._energy_return(others)
             self.decision = "comm restored; returning on battery reserve"
         elif self.scan_queue:
             self.set_state(SCANNING)
@@ -755,6 +859,10 @@ class Drone:
 
     def _switch_lost_comm_recovery(self, others: list, reservation_table=None,
                                    force_base: bool = False, reason: str = "lost comm recovery"):
+        if (force_base and (self.battery.should_return() or not self.has_safe_return_energy()) and
+                self.lost_comm_recovery_target != self.base_target_cell):
+            self._event('energy_return', reason='offline energy recovery', battery=self.battery.level)
+        self._cancel_task(reason)
         self.offline_autonomous_active = False
         self.offline_rtb_no_comms = True
         self._select_lost_comm_recovery_target(others, force_base)
@@ -814,11 +922,12 @@ class Drone:
         target_col, target_row = self.scan_queue[0]
         self.lost_comm_recovery_target = (target_col, target_row)
         self.lost_comm_recovery_label = "offline task"
-        tc, tr = self.cell
-        if tc == target_col and tr == target_row:
+        if self._at_cell_center(target_col, target_row):
             self.scan_queue.pop(0)
             self.path.clear()
             self.decision = "offline scanned waypoint"
+            if not self.scan_queue:
+                self._complete_task()
             return
 
         if not self.has_path():
@@ -860,6 +969,9 @@ class Drone:
         if (self.lost_comm_recovery_target is None or
                 self._lost_comm_retarget_timer >= config.LOST_COMM_RETARGET_INTERVAL or
                 (force_base and self.lost_comm_recovery_target != self.base_target_cell)):
+            if (force_base and self.lost_comm_recovery_target != self.base_target_cell and
+                    (self.battery.should_return() or not self.has_safe_return_energy())):
+                self._event('energy_return', reason='communication recovery reserve', battery=self.battery.level)
             self._lost_comm_retarget_timer = 0
             self._select_lost_comm_recovery_target(others, force_base)
             self._plan_lost_comm_recovery_path(others, reservation_table)
@@ -869,7 +981,8 @@ class Drone:
             self._plan_lost_comm_recovery_path(others, reservation_table)
 
         if (force_base or self.lost_comm_recovery_target == self.base_target_cell) and (
-                self.distance_to_base() <= config.BASE_DOCKING_RADIUS_PX + config.PATH_WAYPOINT_DIST * 1.5):
+                self.distance_to_base() <= config.BASE_DOCKING_RADIUS_PX + config.PATH_WAYPOINT_DIST * 1.5
+                and self._clear_segment_to(*self.base_px)):
             self.path.clear()
             self.target_cell = (config.BASE_COL, config.BASE_ROW)
             self.decision = "lost comm final docking approach"
@@ -899,21 +1012,25 @@ class Drone:
     # ──────────────────────────────────────────
 
     def _tick_stuck_recovery(self, frame: int, others: list, reservation_table=None):
-        if self.state not in (SCANNING, RETURNING, LOST_COMM) or not self.has_path():
+        if getattr(self, '_collision_waiting', False) or getattr(self, '_yield_target', None) is not None:
+            # Collision backoff owns this wait; do not cancel a productive task.
             self._stuck_frames = 0
-            self._last_goal_distance = None
+            self._last_progress_position = (self.px, self.py)
+            return
+        if self.state not in (SCANNING, RETURNING, LOST_COMM) or not (self.has_path() or self.scan_queue):
+            self._stuck_frames = 0
+            self._last_progress_position = None
             return
 
-        goal_col, goal_row = self.path[-1]
-        gx, gy = self.game_map.cell_to_pixel(goal_col, goal_row)
-        dist = math.hypot(self.px - gx, self.py - gy)
-        if self._last_goal_distance is None or dist < self._last_goal_distance - config.STUCK_PROGRESS_EPS:
+        # Accumulate displacement: wind steps can be smaller than the threshold,
+        # and valid obstacle detours need not decrease distance to the final goal.
+        if (self._last_progress_position is None or
+                math.dist((self.px, self.py), self._last_progress_position) >= config.STUCK_PROGRESS_EPS):
             self._stuck_frames = 0
-            self._last_goal_distance = dist
+            self._last_progress_position = (self.px, self.py)
             return
 
         self._stuck_frames += 1
-        self._last_goal_distance = dist
 
         if self._stuck_frames == config.STUCK_WARN_FRAMES:
             self.decision = "slow progress; watching congestion"
@@ -929,10 +1046,7 @@ class Drone:
                 self._last_stuck_alert_frame = frame
 
         if self._stuck_frames >= config.STUCK_REASSIGN_FRAMES and self.state == SCANNING:
-            self.scan_queue.clear()
-            self.path.clear()
-            self.current_frontier_id = None
-            self.current_frontier_cell = None
+            self._cancel_task("stalled")
             self.needs_frontier_reassign = True
             self.set_state(IDLE)
             self.decision = "stuck recovery requested new frontier"
@@ -940,47 +1054,58 @@ class Drone:
             self._stuck_frames = 0
 
     def _move_along_path(self):
-        """Step toward the current waypoint."""
+        """Reach each waypoint center exactly; never skip a nearby target."""
+        yielding = getattr(self, '_yield_target', None)
+        if yielding is not None:
+            if self._move_toward(*self.game_map.cell_to_pixel(*yielding)):
+                self._yield_target = None
+                self.path.clear()  # Replan the retained task from the sidestep.
+            return
         wp = self.current_waypoint_px()
         if wp is None:
             self._stop()
             return
 
-        wx, wy = wp
-        dx = wx - self.px
-        dy = wy - self.py
-        dist = math.hypot(dx, dy)
-
-        if dist < config.PATH_WAYPOINT_DIST:
+        if self._move_toward(*wp):
             self.advance_waypoint()
-            return
-
-        # Speed selection
-        col, row = self.cell
-        speed = config.DRONE_SPEED_WIND if self.game_map.is_wind(col, row) else config.DRONE_SPEED
-
-        nx = dx / dist * speed
-        ny = dy / dist * speed
-        self.vx, self.vy = nx, ny
-        self.px += nx
-        self.py += ny
+            table = getattr(self, '_motion_table', None)
+            if table is not None:
+                table.waypoint_progress(self)
 
     def _move_toward_base_center(self):
         """Final physical approach into the docking radius."""
-        bx, by = self.base_px
-        dx = bx - self.px
-        dy = by - self.py
-        dist = math.hypot(dx, dy)
-        if dist <= 0.01:
+        self._move_toward(*self.base_px)
+
+    def _at_cell_center(self, col, row):
+        return self.distance_to_px(*self.game_map.cell_to_pixel(col, row)) <= 1e-9
+
+    def _clear_segment_to(self, x, y):
+        scale = config.CELL_SIZE
+        return segment_is_clear(self.game_map, (self.px / scale, self.py / scale),
+                                (x / scale, y / scale))
+
+    def _move_toward(self, x, y):
+        point, arrived = motion_step(self.game_map, (self.px, self.py), (x, y))
+        if point is None:
             self._stop()
-            return
-        col, row = self.cell
-        speed = config.DRONE_SPEED_WIND if self.game_map.is_wind(col, row) else config.DRONE_SPEED
-        step = min(speed, dist)
-        self.vx = dx / dist * step
-        self.vy = dy / dist * step
-        self.px += self.vx
-        self.py += self.vy
+            self.path.clear()  # Replan if terrain/path validity changed.
+            self.decision = "blocked terrain segment; replanning"
+            return False
+        table = getattr(self, '_motion_table', None)
+        if table is not None and not table.try_move(self, point):
+            self._stop()
+            return False
+        self.vx, self.vy = point[0] - self.px, point[1] - self.py
+        self.px, self.py = point
+        distance = math.hypot(self.vx, self.vy)
+        self.distance_travelled_px = getattr(self, "distance_travelled_px", 0.) + distance
+        if distance > 0 and getattr(self, "_relaunch_pending", False):
+            self._relaunch_pending = False
+            self._event("relaunch")
+        if distance > 0:
+            self._ready_at_base = False
+            self.battery.stop_charging()
+        return arrived
 
     def _stop(self):
         self.vx = 0.0
@@ -993,6 +1118,14 @@ class Drone:
             if self.battery.is_empty():
                 self._strand("0% away from docking zone")
             return False
+        if self._ready_at_base and self.battery.level >= config.BATTERY_RELAUNCH_THRESH:
+            self._stop()
+            self._cancel_task('docked readiness')
+            self.set_state(IDLE)
+            self.path.clear()
+            self.battery.start_charging()
+            self.decision = "departure-ready; waiting at base"
+            return True
         bx, by = self.base_px
         self.px, self.py = bx, by
         self.vx = self.vy = 0.0
@@ -1003,6 +1136,13 @@ class Drone:
         self.battery.start_charging()
         self.set_state(CHARGING)
         return True
+
+    def _energy_return(self, others):
+        """Energy cancellation flows through the authoritative ownership release."""
+        if self.state not in (RETURNING, CHARGING, STRANDED, FAILED):
+            self._event('energy_return', reason='modeled reserve or low-charge guard',
+                        battery=self.battery.level)
+        self._initiate_return(others)
 
     def _initiate_return(self, others: list):
         if self.state == STRANDED:
@@ -1131,4 +1271,4 @@ class Drone:
                         break
 
     def __repr__(self):
-        return f"Drone(id={self.drone_id}, state={self.state}, bat={self.battery.level:.0f}%)"
+        return f"Drone(id={self.drone_id}, state={self.state}, bat={100*self.battery.pct:.0f}%)"

@@ -10,16 +10,19 @@ Manages:
 """
 
 import os
-import random
-import time
-import config
-from core.analytics import MissionAnalytics, MetricsCsvLogger, export_replay, load_replay
+import copy
+from core.experiment import (Experiment, SimulationClock, TICK_HZ,
+                             in_experiment, settings as config)
+from core.analytics import MissionAnalytics, MetricsCsvLogger
+from core import replay
+from core.persistence import unique_path
 
 
 class Weather:
     """Simulates changing weather conditions."""
 
-    def __init__(self):
+    def __init__(self, rng=None):
+        self.rng = rng if rng is not None else Experiment().stream('environment')
         self.current: str = "Clear"
         self._timer: int  = 0
         self._change_interval = config.WEATHER_CHANGE_INTERVAL
@@ -33,7 +36,7 @@ class Weather:
             # Bias away from current
             probs = {k: v for k, v in weights.items() if k != self.current}
             total = sum(probs.values())
-            r = random.random() * total
+            r = self.rng.random() * total
             cumulative = 0.0
             for w, p in probs.items():
                 cumulative += p
@@ -70,23 +73,43 @@ class Weather:
 class MissionStats:
     """Accumulated statistics for the end-of-mission report."""
 
-    def __init__(self, num_drones: int):
+    def __init__(self, num_drones: int, clock=None):
         self.num_drones     = num_drones
-        self.start_time     = time.time()
+        self.clock = clock if clock is not None else SimulationClock()
+        self.start_time     = self.clock.seconds
         self.end_time: float | None = None
 
-        self.cells_scanned   = 0
-        self.missions_found  = 0
+        self._mission = None
+        self._frozen = None
         self.total_missions  = (config.DEMO_MISSION_ZONE_COUNT
                                 if getattr(config, "QUICK_DEMO_MODE", False)
                                 else config.MISSION_ZONE_COUNT)
-        self.drone_failures  = 0
-        self.battery_returns = 0
-        self.comm_losses     = 0
-        self.weather_events  = 0
+
+    def _values(self):
+        if self._mission is None:
+            return dict(cells_scanned=0, missions_found=0, drone_failures=0,
+                        battery_returns=0, comm_losses=0, weather_events=0)
+        m = self._mission
+        from core.map import CELL_OBSTACLE
+        a = m.swarm.accounting
+        return dict(cells_scanned=int(((m.game_map.grid != CELL_OBSTACLE) & m.game_map.fog).sum()),
+                    missions_found=len(m.game_map.mission_found),
+                    drone_failures=a.count('hardware_failure'),
+                    battery_returns=a.count('return_started'),
+                    comm_losses=a.count('lost_comm_entry'), weather_events=a.count('weather_changed'))
+
+    def _get(self, key):
+        return (self._frozen if self._frozen is not None else self._values())[key]
+
+    cells_scanned = property(lambda self: self._get('cells_scanned'))
+    missions_found = property(lambda self: self._get('missions_found'))
+    drone_failures = property(lambda self: self._get('drone_failures'))
+    battery_returns = property(lambda self: self._get('battery_returns'))
+    comm_losses = property(lambda self: self._get('comm_losses'))
+    weather_events = property(lambda self: self._get('weather_events'))
 
     def elapsed_seconds(self) -> float:
-        end = self.end_time if self.end_time else time.time()
+        end = self.end_time if self.end_time is not None else self.clock.seconds
         return end - self.start_time
 
     def elapsed_str(self) -> str:
@@ -95,7 +118,9 @@ class MissionStats:
         return f"{m:02d}:{s:02d}"
 
     def complete(self):
-        self.end_time = time.time()
+        if self.end_time is None:
+            self.end_time = self.clock.seconds
+            self._frozen = self._values()
 
     def summary_lines(self) -> list[str]:
         return [
@@ -104,8 +129,8 @@ class MissionStats:
             f"Map Coverage      : {self.cells_scanned} cells",
             f"Survivors Found   : {self.missions_found}/{self.total_missions}",
             f"Hardware Failures : {self.drone_failures}",
-            f"Battery Returns   : {self.battery_returns}",
-            f"Comm-Loss Events  : {self.comm_losses}",
+            f"Return Entries    : {self.battery_returns}",
+            f"LOST_COMM Entries : {self.comm_losses}",
             f"Weather Events    : {self.weather_events}",
         ]
 
@@ -123,53 +148,81 @@ class Mission:
     def __init__(self, game_map, swarm):
         self.game_map = game_map
         self.swarm    = swarm
-        self.weather  = Weather()
-        self.stats    = MissionStats(len(swarm.drones))
+        self.experiment = game_map.experiment
+        self.clock = SimulationClock()
+        self.weather  = Weather(self.experiment.stream('environment'))
+        self.stats    = MissionStats(len(swarm.drones), self.clock)
         self.stats.total_missions = len(game_map.mission_zones)
+        self.stats._mission = self
+        self.outcome = "running"
+        self.completion_reason = ""
+        self.completed_tick = None
+        self._final_summary = None
         self.state: str = MISSION_RUNNING
         self.frame: int = 0
         self.seed = getattr(game_map, "seed", 0)
         self.analytics = MissionAnalytics()
         self.metrics = self.analytics.sample(self)
-        self.metrics_logger = MetricsCsvLogger(self.seed)
+        self.metrics_logger = MetricsCsvLogger(self.seed, self.experiment)
         self.last_replay_path: str | None = None
-        self.replay_playback_active = False
-        self._loaded_replay: list[dict] = []
-        self._replay_playback_idx = 0
+        self.replay_player = None
 
         # Replay buffer
         self._replay_buffer: list[dict] = []
         self._replay_timer  = 0
+        self._replay_world = replay.capture_world(self)
+        self._replay_bytes = 0
+        self._replay_truncated = False
+        self._record_snapshot()
 
+    @property
+    def replay_playback_active(self):
+        return self.replay_player is not None
+
+    @property
+    def frame(self):
+        return self.clock.tick
+
+    @frame.setter
+    def frame(self, value):
+        self.clock.tick = value
+
+    @in_experiment
     def update(self):
         if self.replay_playback_active:
-            self._tick_replay_playback()
+            self.replay_player.advance()
             return
 
         self.frame += 1
 
-        # Weather simulation
+        self.swarm.accounting.tick = self.frame
+        starts = {d.drone_id: (d.px,d.py) for d in self.swarm.drones}
+        previous_weather = self.weather.current
         self.weather.update(self.frame)
+        if previous_weather != self.weather.current:
+            self.swarm.accounting.emit('weather_changed', subject=self.weather.current,
+                                       reason=previous_weather)
 
         # Swarm update (passes weather to drones)
         self.swarm.update(self.frame, self.weather.current)
+        self.analytics.observe(self, starts)
+        reason = ('coverage_target' if self.game_map.exploration_pct() >= .98 else
+                  'all_survivors_published' if self.game_map.mission_zones and
+                  len(self.game_map.mission_found) >= len(self.game_map.mission_zones) else '')
+        completed_now = bool(reason and self.state == MISSION_RUNNING)
+        if completed_now:
+            self.state = MISSION_COMPLETE
+            self.outcome = 'success'
+            self.completion_reason = reason
+            self.completed_tick = self.frame
+            self.swarm.accounting.emit('mission_completed', reason=reason)
+            self.stats.complete()
+            self.swarm.alerts.append("MISSION COMPLETE")
         self.metrics = self.analytics.sample(self)
-        if self.frame % config.TARGET_FPS == 0:
+        if completed_now:
+            self._final_summary = self.summary()
+        if self.frame % TICK_HZ == 0 or completed_now:
             self.metrics_logger.write(self.metrics)
-
-        # Stats accumulation
-        from core.drone import FAILED, RETURNING, LOST_COMM
-        for d in self.swarm.drones:
-            pass  # detailed stats updated via alerts
-
-        # Check mission completion
-        if (self.game_map.exploration_pct() >= 0.98 or
-                len(self.game_map.mission_found) >= len(self.game_map.mission_zones)):
-            if self.state == MISSION_RUNNING:
-                self.state = MISSION_COMPLETE
-                self.stats.complete()
-                self.stats.missions_found = len(self.game_map.mission_found)
-                self.swarm.alerts.append("★ MISSION COMPLETE ★")
 
         # Replay snapshot
         self._replay_timer += 1
@@ -177,49 +230,59 @@ class Mission:
             self._replay_timer = 0
             self._record_snapshot()
 
+    def summary(self):
+        """Detached final snapshot after completion, otherwise current metrics."""
+        from dataclasses import asdict
+        if self._final_summary is not None:
+            return copy.deepcopy(self._final_summary)
+        return dict(version=1, metrics=asdict(self.analytics.sample(self)),
+                    accounting=self.swarm.accounting.snapshot())
+
     def _record_snapshot(self):
-        """Store a lightweight snapshot for replay."""
-        if len(self._replay_buffer) >= config.REPLAY_MAX_FRAMES:
+        """Capture a detached sampled state, with explicit bounded retention."""
+        if self._replay_truncated:
             return
-        snap = {
-            "frame": self.frame,
-            "weather": self.weather.current,
-            "exploration": self.game_map.exploration_pct(),
-            "metrics": self.metrics.csv_row(),
-            "drones": [
-                {
-                    "id":    d.drone_id,
-                    "px":    d.px,
-                    "py":    d.py,
-                    "state": d.state,
-                    "bat":   d.battery.level,
-                }
-                for d in self.swarm.drones
-            ],
-        }
+        if len(self._replay_buffer) >= min(config.REPLAY_MAX_FRAMES, replay.MAX_FRAMES):
+            self._replay_truncated = True
+            return
+        snap = replay.capture_frame(self)
+        size = len(replay.canonical(snap).encode())
+        if self._replay_bytes + size > replay.MAX_FILE_BYTES // 2:
+            self._replay_truncated = True
+            return
         self._replay_buffer.append(snap)
+        self._replay_bytes += size
 
     def get_replay(self) -> list[dict]:
-        return list(self._replay_buffer)
+        return copy.deepcopy(self._replay_buffer)
 
-    def export_replay(self, path: str | None = None) -> str:
+    @in_experiment
+    def export_replay(self, path: str | None = None, *, overwrite=False) -> str:
+        if self.replay_playback_active:
+            raise ValueError("Playback is not a live recording; export the original file instead")
+        if replay.capture_world(self) != self._replay_world:
+            raise ValueError("World changed after recording began; start a new recording")
+        if not self._replay_buffer:
+            raise ValueError("No replay snapshots were recorded")
+        frames = list(self._replay_buffer)
+        # Preserve the exact export tick unless bounded recording already stopped.
+        if (not self._replay_truncated and frames[-1]['frame'] != self.frame and
+                len(frames) < min(config.REPLAY_MAX_FRAMES, replay.MAX_FRAMES) and
+                self._replay_bytes < replay.MAX_FILE_BYTES // 2):
+            frames.append(replay.capture_frame(self))
         if path is None:
-            os.makedirs(config.REPLAY_EXPORT_DIR, exist_ok=True)
-            stamp = time.strftime("%Y%m%d_%H%M%S")
-            path = os.path.join(config.REPLAY_EXPORT_DIR, f"mission_replay_{stamp}_seed{self.seed}.json")
-        export_replay(path, self.seed, self.get_replay(), self.metrics)
-        self.last_replay_path = path
+            path = unique_path(config.REPLAY_EXPORT_DIR, f"mission_replay_seed{self.seed}", '.json')
+        replay.save(path, replay.make_payload(self, frames, self._replay_world), overwrite=overwrite)
+        self.last_replay_path = str(path)
         self.swarm.alerts.append(f"Replay exported: {path}")
-        return path
+        return str(path)
 
     def load_replay(self, path: str) -> int:
-        payload = load_replay(path)
-        self._loaded_replay = list(payload["frames"])
-        self._replay_playback_idx = 0
-        self.replay_playback_active = bool(self._loaded_replay)
-        self.last_replay_path = path
-        self.swarm.alerts.append(f"Replay loaded: {len(self._loaded_replay)} frames")
-        return len(self._loaded_replay)
+        payload = replay.load(path)
+        player = replay.ReplayPlayer(payload)
+        self.replay_player = player
+        self.last_replay_path = str(path)
+        return len(payload['frames'])
 
     def load_last_replay(self) -> int:
         if self.last_replay_path and os.path.exists(self.last_replay_path):
@@ -234,29 +297,3 @@ class Mission:
         if not files:
             raise FileNotFoundError("No replay JSON files found")
         return self.load_replay(max(files, key=os.path.getmtime))
-
-    def _tick_replay_playback(self):
-        if not self._loaded_replay:
-            self.replay_playback_active = False
-            return
-        snap = self._loaded_replay[self._replay_playback_idx]
-        self.frame = int(snap.get("frame", self.frame))
-        self.weather.current = snap.get("weather", self.weather.current)
-        by_id = {d.drone_id: d for d in self.swarm.drones}
-        for item in snap.get("drones", []):
-            drone = by_id.get(item.get("id"))
-            if drone is None:
-                continue
-            drone.px = float(item.get("px", drone.px))
-            drone.py = float(item.get("py", drone.py))
-            drone.state = item.get("state", drone.state)
-            drone.battery.level = float(item.get("bat", drone.battery.level))
-        metric_data = snap.get("metrics")
-        if metric_data:
-            for key, value in metric_data.items():
-                if hasattr(self.metrics, key):
-                    setattr(self.metrics, key, value)
-        self._replay_playback_idx += 1
-        if self._replay_playback_idx >= len(self._loaded_replay):
-            self.replay_playback_active = False
-            self.swarm.alerts.append("Replay playback complete")

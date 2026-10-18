@@ -13,7 +13,7 @@ Responsibilities
 import math
 import random
 import numpy as np
-import config
+from core.experiment import TICK_HZ, settings as config
 from core.map import Map, CELL_OBSTACLE, CELL_NOFLY
 from core.drone import Drone, IDLE, SCANNING, RETURNING, CHARGING, FAILED, STRANDED, LOST_COMM
 from core.intelligence import FrontierMap, ReservationTable
@@ -97,6 +97,8 @@ class Swarm:
     """
 
     def __init__(self, game_map: Map, num_drones: int = config.NUM_DRONES):
+        from core.accounting import Accounting
+        self.accounting = Accounting()
         self.game_map  = game_map
         self.drones: list[Drone] = []
         self.sectors: list[Sector] = []
@@ -110,6 +112,10 @@ class Swarm:
         self.negotiation_log: list[str] = []
         self.frontiers_assigned = 0
         self.frontiers_completed = 0
+        # Authoritative live contract per drone; object fields are projections.
+        self.assignments: dict[int, tuple[str, int]] = {}
+        self.offline_assignments: set[int] = set()
+        self.task_cancellations: dict[str, int] = {}
         self._last_coverage = 0.0
         self._coverage_stall_frames = 0
         self.coverage_stall_recoveries = 0
@@ -140,6 +146,7 @@ class Swarm:
     def _init_drones(self, n: int):
         for i in range(n):
             d = Drone(i, self.game_map)
+            d._task_owner = self
             self.drones.append(d)
 
     def _init_sectors(self):
@@ -173,16 +180,96 @@ class Swarm:
     # Assignment helpers
     # ──────────────────────────────────────────
 
+    def _work_requires_offline(self, cells) -> bool:
+        # Moving explorers cannot promise coverage for a whole task's lifetime.
+        anchors = [(config.BASE_COL, config.BASE_ROW)] + [
+            d.relay_anchor_cell for d in self.drones if d.relay_anchor_active and
+            d.comm.is_connected and d.relay_anchor_cell is not None and
+            d._at_cell_center(*d.relay_anchor_cell)
+        ]
+        safe_range = config.DRONE_COMM_RANGE / config.CELL_SIZE * config.COMM_RELAY_SAFE_RANGE
+        return any(all(math.dist(cell, anchor) > safe_range for anchor in anchors) for cell in cells)
+
+    def _can_claim_work(self, drone: Drone, cells) -> bool:
+        return (not self._work_requires_offline(cells) or
+                drone.drone_id in self.offline_assignments or
+                len(self.offline_assignments) < config.COMM_MAX_OFFLINE_EXPLORERS)
+
+    def _claim_assignment(self, drone: Drone, kind: str, task_id: int, work_cells=()):
+        frontier = (next((f for f in self.frontiers.frontiers if f.frontier_id == task_id), None)
+                    if kind == "frontier" else None)
+        sector = self._get_sector(task_id) if kind == "sector" else None
+        if not (frontier is not None or sector is not None or
+                (kind == "relay" and task_id == drone.drone_id)):
+            raise ValueError(f"unknown task {(kind, task_id)}")
+        task = (kind, task_id)
+        if any(owner != drone.drone_id and claim == task
+               for owner, claim in self.assignments.items()):
+            raise ValueError(f"task {task} already owned")
+        if kind != "relay" and drone.relay_anchor_active:
+            raise ValueError("relay already owned by its relay contract")
+        if self.assignments.get(drone.drone_id) == task:
+            return
+        requires_offline = kind != "relay" and self._work_requires_offline(work_cells)
+        if requires_offline and not self._can_claim_work(drone, work_cells):
+            raise ValueError("offline exploration capacity already owned")
+        self._release_assignment(drone, f"replace with {kind}")
+        self.assignments[drone.drone_id] = task
+        self.accounting.emit("task_awarded", drone.drone_id, f"{kind}:{task_id}", kind)
+        if requires_offline:
+            self.offline_assignments.add(drone.drone_id)
+        if kind == "frontier":
+            frontier.assigned_drone = drone.drone_id
+            drone.current_frontier_id = task_id
+            drone.current_frontier_cell = frontier.cell
+        elif kind == "sector":
+            sector.assigned_drone = drone.drone_id
+            drone.assigned_sector = task_id
+        drone.needs_frontier_reassign = False
+
+    def _release_assignment(self, drone: Drone, reason: str, completed: bool = False):
+        task = self.assignments.pop(drone.drone_id, None)
+        self.offline_assignments.discard(drone.drone_id)
+        if task is not None:
+            kind, task_id = task
+            self.accounting.emit("task_completed" if completed else "task_cancelled",
+                                 drone.drone_id, f"{kind}:{task_id}", reason)
+            if completed and kind == "frontier":
+                self.frontiers_completed += 1
+            elif completed and kind == "sector":
+                self._get_sector(task_id).is_fully_scanned(self.game_map)
+            elif not completed:
+                self.task_cancellations[reason] = self.task_cancellations.get(reason, 0) + 1
+        self.frontiers.release_drone(drone.drone_id)
+        if completed and task is not None and task[0] == "frontier":
+            self.frontiers.frontiers = [f for f in self.frontiers.frontiers if f.frontier_id != task[1]]
+        for sector in self.sectors:
+            if sector.assigned_drone == drone.drone_id:
+                sector.assigned_drone = None
+        drone.current_frontier_id = drone.current_frontier_cell = None
+        drone.assigned_sector = drone.completed_frontier_id = None
+        drone.scan_queue.clear()
+        drone.path.clear()
+        drone.waypoint_idx = 0
+        drone._stuck_frames = 0
+        drone._last_progress_position = None
+        drone.relay_anchor_active = False
+        drone.relay_anchor_cell = None
+        drone.relay_anchor_until = 0
+        drone.comm_role = "explorer"
+
+    def _complete_assignment(self, drone: Drone):
+        if drone.relay_anchor_active:
+            return  # Holding at an anchor is ongoing work.
+        self._release_assignment(drone, "completed", completed=True)
+        drone.needs_frontier_reassign = True
+
     def _assign(self, drone: Drone, sector: Sector):
         """Assign a sector to a drone and build its scan queue."""
-        # Release old sector
-        if drone.assigned_sector is not None:
-            old = self._get_sector(drone.assigned_sector)
-            if old:
-                old.assigned_drone = None
-
-        sector.assigned_drone = drone.drone_id
-        drone.assigned_sector = sector.idx
+        if (drone.relay_anchor_active or drone.scan_queue or
+                drone.state not in (IDLE, SCANNING) or
+                sector.assigned_drone not in (None, drone.drone_id)):
+            return
 
         # Build remaining scan queue (skip already-scanned cells)
         remaining = [
@@ -197,7 +284,12 @@ class Swarm:
             self._assign_nearest_sector(drone)
             return
 
-        first_target = remaining[0]
+        if not self._can_claim_work(drone, remaining):
+            drone.decision = "waiting for offline exploration capacity"
+            return
+
+        personalized = self._personalize_scan_queue(drone, remaining)
+        first_target = personalized[0]
         if (not drone.can_accept_task(first_target[0], first_target[1]) or
                 not self._can_maintain_comm_to_cell(drone, first_target[0], first_target[1])):
             sector.assigned_drone = None
@@ -214,26 +306,37 @@ class Swarm:
             return
 
         comm_risk = self._comm_risk_for_cell(drone, first_target[0], first_target[1])
+        planned = drone.prepare_energy_route(first_target, self.drones, self.reservations)
+        if planned is None:
+            drone.decision = "sector deferred; energy or route unavailable"
+            return
+        self._claim_assignment(drone, "sector", sector.idx, remaining)
         drone.comm_risk_score = comm_risk
         drone.comm_path_risk_weight = self._comm_path_weight_for(drone, comm_risk)
-        drone.scan_queue = self._personalize_scan_queue(drone, remaining)
+        drone.scan_queue = personalized
         drone.set_state_from_swarm = True  # flag consumed by drone
-        from core.drone import SCANNING
         drone.set_state(SCANNING)
-        if not drone.has_path():
-            first_col, first_row = drone.scan_queue[0]
-            drone.plan_path_to(first_col, first_row, self.drones)
+        drone.path = planned
+        drone.waypoint_idx = 0
+        drone.target_cell = first_target
 
     def _assign_nearest_sector(self, drone: Drone):
         """Find the closest unassigned, incomplete sector and assign it."""
+        if drone.relay_anchor_active or drone.scan_queue or drone.state not in (IDLE, SCANNING):
+            return
         candidates = [
             s for s in self.sectors
             if s.assigned_drone is None and not s.completed and s.scan_cells
         ]
+        def energy_feasible(sector):
+            work = self._personalize_scan_queue(drone, [cell for cell in sector.scan_cells
+                if not self.game_map.fog[cell[1], cell[0]]])
+            return bool(work) and drone.can_accept_task(*work[0])
         candidates = [
             s for s in candidates
-            if drone.can_accept_task(s.centre[0], s.centre[1]) and
-            self._can_maintain_comm_to_cell(drone, s.centre[0], s.centre[1])
+            if energy_feasible(s) and
+            self._can_maintain_comm_to_cell(drone, s.centre[0], s.centre[1]) and
+            self._can_claim_work(drone, [(c, r) for c, r in s.scan_cells if not self.game_map.fog[r, c]])
         ]
         if not candidates:
             # All sectors done/covered or too expensive for current battery.
@@ -289,7 +392,7 @@ class Swarm:
         active = [d for d in self.drones if d.state not in (FAILED, STRANDED)]
         if not active:
             return 0
-        connected_ratio = self.last_comm_snapshot.get("connected_ratio", 1.0) or 1.0
+        connected_ratio = self.last_comm_snapshot.get("connected_ratio", 1.0)
         weak_count = len(self.last_comm_snapshot.get("weak", []))
         base_count = max(config.COMM_MIN_RELAY_ANCHORS, round(len(active) * config.COMM_RELAY_FRACTION))
         if connected_ratio < config.COMM_MIN_CONNECTED_RATIO or weak_count >= 2:
@@ -339,7 +442,7 @@ class Swarm:
         max_supported = safe_cells * relay_budget
         chain_gap = max(0.0, base_dist - max_supported)
 
-        connected_ratio = self.last_comm_snapshot.get("connected_ratio", 1.0) or 1.0
+        connected_ratio = self.last_comm_snapshot.get("connected_ratio", 1.0)
         degraded = max(0.0, config.COMM_MIN_CONNECTED_RATIO - connected_ratio) * 7.0
         relay_bonus = -2.0 if drone.comm_role == "relay" else 0.0
         return max(0.0, max(local_gap, chain_gap) + degraded + relay_bonus)
@@ -450,19 +553,37 @@ class Swarm:
     def _assign_relay_roles(self, frame: int):
         candidates = [
             d for d in self.drones
-            if d.state not in (FAILED, STRANDED, CHARGING, RETURNING) and
+            if d.state not in (FAILED, STRANDED, CHARGING, RETURNING, LOST_COMM) and
             not d.battery.should_return()
         ]
         relay_count = min(self._relay_anchor_count(), len(candidates))
         targets = self._relay_anchor_targets()
-        assignments: dict[int, tuple[int, int]] = {}
-        remaining = list(candidates)
+        # A minimum hold is not an expiry: keep productive connected anchors.
+        # Release excess roles after the hold, or retarget a disconnected one.
+        assignments = {}
+        for drone in sorted(self.drones, key=lambda d: (d.distance_to_base(), d.drone_id)):
+            if (drone.relay_anchor_active and drone.relay_anchor_cell is not None and
+                    (drone in candidates or drone.state == LOST_COMM) and
+                    (frame < drone.relay_anchor_until or drone.state == LOST_COMM or
+                     (drone.comm.is_connected and len(assignments) < relay_count))):
+                assignments[drone.drone_id] = drone.relay_anchor_cell
+        remaining = [d for d in candidates if d.drone_id not in assignments]
+        pending_targets = list(targets)
+        for anchor in assignments.values():
+            if pending_targets:
+                occupied_target = min(pending_targets, key=lambda cell: math.dist(cell, anchor))
+                pending_targets.remove(occupied_target)
 
-        for target in targets[:relay_count]:
+        for target in pending_targets[:max(0, relay_count - len(assignments))]:
             if not remaining:
                 break
+            target = self._connected_relay_target(target)
+            affordable = [d for d in remaining if d.can_accept_task(
+                *target, hold_ticks=config.COMM_RELAY_ANCHOR_HOLD_FRAMES)]
+            if not affordable:
+                continue
             best = min(
-                remaining,
+                affordable,
                 key=lambda d: (
                     math.hypot(d.cell[0] - target[0], d.cell[1] - target[1]) -
                     (4.0 if d.comm_role == "relay" else 0.0) -
@@ -480,11 +601,18 @@ class Swarm:
                 d.drone_id,
             ))
             for drone in remaining[:relay_count - len(assignments)]:
-                assignments[drone.drone_id] = drone.cell
+                target = self._connected_relay_target(drone.cell)
+                if drone.can_accept_task(*target, hold_ticks=config.COMM_RELAY_ANCHOR_HOLD_FRAMES):
+                    assignments[drone.drone_id] = target
         relays = set(assignments)
 
         for drone in self.drones:
             if drone.drone_id not in relays:
+                if drone.relay_anchor_active:
+                    self._release_assignment(drone, "relay lease ended")
+                    if drone.state in (SCANNING, IDLE):
+                        drone.set_state(IDLE)
+                        drone.needs_frontier_reassign = True
                 drone.comm_role = "explorer"
                 drone.comm_path_risk_weight = self._comm_path_weight_for(drone, drone.comm_risk_score)
                 if frame >= drone.relay_anchor_until:
@@ -493,15 +621,46 @@ class Swarm:
                 continue
 
             target = assignments.get(drone.drone_id, drone.cell)
+            new_role = not drone.relay_anchor_active
+            if new_role:
+                planned = drone.prepare_energy_route(target, self.drones, self.reservations,
+                    hold_ticks=config.COMM_RELAY_ANCHOR_HOLD_FRAMES)
+                if planned is None:
+                    continue
+            self._claim_assignment(drone, "relay", drone.drone_id)
             drone.comm_role = "relay"
             drone.comm_path_risk_weight = config.COMM_PATH_RISK_WEIGHT
             drone.relay_anchor_cell = target
             drone.relay_anchor_active = True
-            drone.relay_anchor_until = max(
-                drone.relay_anchor_until,
-                frame + config.COMM_RELAY_ANCHOR_HOLD_FRAMES,
-            )
+            if new_role:
+                drone.scan_queue = [target]
+                drone.set_state(SCANNING)
+                drone.path = planned
+                drone.waypoint_idx = 0
+                drone.target_cell = target
+            if frame >= drone.relay_anchor_until:
+                drone.relay_anchor_until = frame + config.COMM_RELAY_ANCHOR_HOLD_FRAMES
             drone.relay_reason = "relay anchor"
+
+    def _connected_relay_target(self, target):
+        """A new anchor must attach to base or an already holding connected relay."""
+        anchors = [(config.BASE_COL, config.BASE_ROW)] + [
+            d.relay_anchor_cell for d in self.drones if d.relay_anchor_active and
+            d.comm.is_connected and d.relay_anchor_cell is not None and
+            d._at_cell_center(*d.relay_anchor_cell)
+        ]
+        safe_range = config.DRONE_COMM_RANGE / config.CELL_SIZE * config.COMM_RELAY_SAFE_RANGE
+        anchor = min(anchors, key=lambda cell: math.dist(cell, target))
+        distance = math.dist(anchor, target)
+        if distance <= safe_range and self.game_map.is_passable(*target):
+            return target
+        fraction = min(1.0, safe_range / max(1.0, distance))
+        col, row = (round(a + (b-a)*fraction) for a, b in zip(anchor, target))
+        # Terrain fallback must preserve radio validity as well as passability.
+        candidates = [(c, r) for r in range(max(0, row-8), min(self.game_map.rows, row+9))
+                      for c in range(max(0, col-8), min(self.game_map.cols, col+9))
+                      if self.game_map.is_passable(c, r) and math.dist((c, r), anchor) <= safe_range]
+        return min(candidates, key=lambda cell: math.dist(cell, target), default=anchor)
 
     def _maintain_relay_anchors(self, frame: int):
         self._assign_relay_roles(frame)
@@ -511,10 +670,9 @@ class Swarm:
             if drone.state in (FAILED, STRANDED, CHARGING, RETURNING, LOST_COMM):
                 continue
             if drone.battery.should_return() or not drone.has_safe_return_energy(*drone.relay_anchor_cell):
-                drone.relay_anchor_active = False
-                drone.comm_role = "explorer"
+                drone._energy_return(self.drones)
                 continue
-            if drone.cell != drone.relay_anchor_cell:
+            if not drone._at_cell_center(*drone.relay_anchor_cell):
                 if not drone.scan_queue or drone.scan_queue[0] != drone.relay_anchor_cell:
                     drone.scan_queue = [drone.relay_anchor_cell]
                     drone.current_frontier_id = None
@@ -572,9 +730,8 @@ class Swarm:
                 target = self._nearest_comm_safe_cell(drone)
             if drone.cell == target:
                 continue
-            drone.scan_queue = [target] + [c for c in drone.scan_queue if c != target][:8]
-            drone.current_frontier_id = None
-            drone.current_frontier_cell = None
+            # A safety detour keeps the original contract and its remaining work.
+            drone.scan_queue = [target] + [c for c in drone.scan_queue if c != target]
             drone.path.clear()
             drone.set_state(SCANNING)
             drone.plan_path_to(*target, self.drones, self.reservations)
@@ -584,21 +741,21 @@ class Swarm:
         coverage = self.game_map.exploration_pct()
         if record_sample:
             self._coverage_samples.append((frame, coverage))
-            cutoff = frame - config.TARGET_FPS * 60
+            cutoff = frame - TICK_HZ * 60
             while len(self._coverage_samples) > 2 and self._coverage_samples[0][0] < cutoff:
                 self._coverage_samples.pop(0)
 
             if len(self._coverage_samples) >= 2:
                 start_frame, start_cov = self._coverage_samples[0]
-                elapsed_min = max(1.0 / 60.0, (frame - start_frame) / config.TARGET_FPS / 60.0)
+                elapsed_min = max(1.0 / 60.0, (frame - start_frame) / TICK_HZ / 60.0)
                 self.coverage_growth_per_min = max(0.0, (coverage - start_cov) / elapsed_min)
             else:
                 self.coverage_growth_per_min = 0.0
 
             self._relaxation_timer += 1
-            if self._relaxation_timer >= config.TARGET_FPS:
+            if self._relaxation_timer >= TICK_HZ:
                 self._relaxation_timer = 0
-                enough_history = frame >= config.TARGET_FPS * 30
+                enough_history = frame >= TICK_HZ * 30
                 stalled = self._coverage_stall_frames >= config.COMM_RELAXATION_START_FRAMES
                 slow_growth = (
                     enough_history and
@@ -643,22 +800,16 @@ class Swarm:
         }
 
     def _negotiate_frontiers(self, force: bool = False):
-        """Run a lightweight contract-net task negotiation among drones."""
+        """Run negotiation now; force never authorizes preemption of live work."""
         if not self.frontiers.frontiers:
             return
-
-        for drone in self.drones:
-            if drone.needs_frontier_reassign or drone.state in (FAILED, STRANDED, RETURNING, CHARGING):
-                self.frontiers.release_drone(drone.drone_id)
-                drone.current_frontier_id = None
-                drone.current_frontier_cell = None
 
         bidders = [
             d for d in self.drones
             if d.state not in (FAILED, STRANDED, RETURNING, CHARGING, LOST_COMM) and
             not d.relay_anchor_active and
             not d.battery.should_return() and
-            (force or d.needs_frontier_reassign or d.current_frontier_id is None or not d.scan_queue)
+            not d.scan_queue and d.drone_id not in self.assignments
         ]
         if not bidders:
             return
@@ -705,13 +856,14 @@ class Swarm:
                     continue
                 if enforce_spread and self._frontier_spread_penalty(frontier.cell, claimed_cells, include_existing=False) > 0:
                     continue
-                self.frontiers.release_drone(drone.drone_id)
-                frontier.assigned_drone = drone.drone_id
-                frontier.winning_bid = bid
                 drone.comm_risk_score = comm_risk
                 drone.comm_path_risk_weight = self._comm_path_weight_for(drone, comm_risk)
                 work_cells = self._frontier_work_cells(frontier, drone)
-                drone.accept_frontier_task(frontier, work_cells, self.drones, self.reservations)
+                if not self._can_claim_work(drone, work_cells):
+                    continue
+                if drone.accept_frontier_task(frontier, work_cells, self.drones, self.reservations) is False:
+                    continue
+                frontier.winning_bid = bid
                 self.frontiers_assigned += 1
                 claimed_frontiers.add(frontier.frontier_id)
                 claimed_drones.add(drone.drone_id)
@@ -774,6 +926,9 @@ class Swarm:
 
     def update(self, frame: int, weather: str):
         self.frame_count = frame
+        self.accounting.tick = frame
+        for drone in self.drones:
+            drone._energy_weather = weather
 
         # 1. Update communication graph
         from core.communication import CommManager
@@ -802,26 +957,32 @@ class Swarm:
         if any(d.needs_frontier_reassign for d in self.drones):
             self._negotiate_frontiers(force=True)
 
-        self.reservations.rebuild(self.drones)
+        self.reservations.rebuild(self.drones, start_tick=frame-1)
+        self.reservations.begin_tick(frame, self.drones)
 
         # 2. Update each drone
-        for drone in self.drones:
-            drone.update(frame, weather, self.drones, self.reservations)
+        for drone in sorted(self.drones, key=self.reservations.priority_key):
+            drone.update(frame, weather, self.drones, self.reservations, defer_sensing=True)
+            if drone.state == SCANNING and not drone.scan_queue:
+                drone._complete_task()
+                drone.set_state(IDLE)
             # Collect drone alerts
             if drone.alerts:
                 self.alerts.extend(drone.alerts)
                 drone.alerts.clear()
 
-        self.reservations.rebuild(self.drones)
+        # Motion can break/restore a radio path within this tick. Deliver and
+        # sense only after refreshing geometry; do not tick timeout counters twice.
+        self._comm_manager.update(self.drones, advance_counters=False)
+        self.last_comm_snapshot = self._comm_manager.connectivity_snapshot(self.drones)
+        for drone in sorted(self.drones, key=self.reservations.priority_key):
+            drone._sync_offline_discoveries()
+            drone._tick_sensing()
+
+        self.reservations.rebuild(self.drones, start_tick=frame)
 
         # 3. Rebalance sectors periodically
         self._watch_coverage_stall()
-
-        for drone in self.drones:
-            if drone.completed_frontier_id is not None:
-                self.frontiers_completed += 1
-                self.frontiers.release_drone(drone.drone_id)
-                drone.completed_frontier_id = None
 
         self._rebalance_timer += 1
         if self._rebalance_timer >= config.REBALANCE_INTERVAL:
@@ -829,24 +990,11 @@ class Swarm:
             self._rebalance()
 
         # 4. Handle drones that became idle
+        self._negotiate_frontiers(force=True)
         for drone in self.drones:
-            from core.drone import IDLE
             if drone.state == IDLE and drone.battery.pct > 0.4:
-                self._negotiate_frontiers(force=True)
                 if drone.state == IDLE and not drone.scan_queue:
                     self._assign_nearest_sector(drone)
-
-        # 5. Handle drones that finished their sector queue
-        for drone in self.drones:
-            from core.drone import SCANNING
-            if drone.state == SCANNING and not drone.scan_queue:
-                # Mark sector complete, get new one
-                if drone.assigned_sector is not None:
-                    old = self._get_sector(drone.assigned_sector)
-                    if old:
-                        old.completed = True
-                        old.assigned_drone = None
-                self._assign_nearest_sector(drone)
 
     def _watch_coverage_stall(self):
         coverage = self.game_map.exploration_pct()
@@ -868,14 +1016,12 @@ class Swarm:
                 f"Swarm: relaxing comm risk for expansion ({self.comm_risk_relaxation:.2f})"
             )
             for drone in self.drones:
-                if drone.state in (IDLE, SCANNING) and not drone.relay_anchor_active and not drone.battery.should_return():
-                    self.frontiers.release_drone(drone.drone_id)
-                    drone.current_frontier_id = None
-                    drone.current_frontier_cell = None
+                if (drone.state in (IDLE, SCANNING) and not drone.relay_anchor_active and
+                        not drone.battery.should_return() and not drone.has_path() and
+                        drone._stuck_frames >= config.STUCK_WARN_FRAMES):
+                    self._release_assignment(drone, "coverage stall without path")
+                    drone.set_state(IDLE)
                     drone.needs_frontier_reassign = True
-                    if drone.has_path() and self._frontier_spread_penalty(drone.path[-1]) > config.FRONTIER_SPREAD_RADIUS:
-                        drone.path.clear()
-                        drone.scan_queue.clear()
             self._negotiate_frontiers(force=True)
 
         if self._coverage_stall_frames < config.EXPLORATION_STALL_FRAMES:
@@ -887,13 +1033,12 @@ class Swarm:
         self.alerts.append("Swarm: coverage stalled, refreshing exploration tasks")
 
         for drone in self.drones:
-            if drone.state in (IDLE, SCANNING) and not drone.battery.should_return():
-                self.frontiers.release_drone(drone.drone_id)
-                drone.current_frontier_id = None
-                drone.current_frontier_cell = None
+            if (drone.state in (IDLE, SCANNING) and not drone.relay_anchor_active and
+                    not drone.battery.should_return() and not drone.has_path() and
+                    drone._stuck_frames >= config.STUCK_WARN_FRAMES):
+                self._release_assignment(drone, "coverage stall without path")
+                drone.set_state(IDLE)
                 drone.needs_frontier_reassign = True
-                if drone.state == SCANNING and not drone.has_path():
-                    drone.scan_queue.clear()
 
         self._negotiate_frontiers(force=True)
         for drone in self.drones:
@@ -918,10 +1063,12 @@ class Swarm:
             if drone.battery.is_empty() and not drone.can_charge_here() and drone.state != STRANDED:
                 drone._strand("battery depleted away from docking zone")
             if drone.state == CHARGING and drone.can_charge_here():
+                previous_charge = drone.battery.level
                 drone.battery.level = min(
                     drone.battery.max,
-                    drone.battery.level + config.BATTERY_EMERGENCY_CHARGE_RATE * config.TARGET_FPS
+                    drone.battery.level + config.BATTERY_EMERGENCY_CHARGE_RATE * TICK_HZ
                 )
+                drone.battery.recharged += drone.battery.level - previous_charge
                 if drone.battery.level >= config.BATTERY_RELAUNCH_THRESH:
                     drone.battery.stop_charging()
                     drone.set_state(IDLE)
@@ -945,12 +1092,7 @@ class Swarm:
 
         for drone in self.drones:
             if drone.state in (FAILED, STRANDED) and drone.assigned_sector is not None:
-                # Release sector for reassignment
-                old = self._get_sector(drone.assigned_sector)
-                if old:
-                    old.assigned_drone = None
-                drone.assigned_sector = None
-                drone.scan_queue.clear()
+                self._release_assignment(drone, "inactive")
                 self.alerts.append(f"Swarm: re-routing sector from inactive D{drone.drone_id}")
 
             # Assign partially-scanned sectors to returning drones with good battery
@@ -993,6 +1135,7 @@ class Swarm:
             drone.battery.level = 0.0
             drone.battery.stop_charging()
             if drone._dock():
+                drone._event("drone_rescued", reason="operator relocation to dock")
                 drone.decision = "manual rescue to dock"
                 rescued += 1
         if rescued:

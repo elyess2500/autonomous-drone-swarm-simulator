@@ -10,8 +10,12 @@ Supports:
 
 import heapq
 import math
+from dataclasses import dataclass
+from enum import Enum
+from numbers import Integral
 from typing import Optional
 from core.map import Map
+from core.geometry import segment_is_clear
 
 
 def heuristic(a: tuple[int, int], b: tuple[int, int]) -> float:
@@ -21,7 +25,49 @@ def heuristic(a: tuple[int, int], b: tuple[int, int]) -> float:
     return max(dx, dy) + (math.sqrt(2) - 1) * min(dx, dy)
 
 
+class PathStatus(str, Enum):
+    FOUND = "found"
+    INVALID_INPUT = "invalid_input"
+    UNREACHABLE = "unreachable"
+    BUDGET_EXHAUSTED = "budget_exhausted"
+
+
+@dataclass
+class PathResult:
+    status: PathStatus
+    path: list[tuple[int, int]]
+    requested_goal: tuple[int, int]
+    resolved_goal: tuple[int, int] | None
+    cost: float = math.inf
+    expanded: int = 0
+
+
 def find_path(
+    game_map: Map, start_col: int, start_row: int, goal_col: int, goal_row: int,
+    allow_diagonal: bool = True,
+    other_drone_positions: Optional[list[tuple[int, int]]] = None,
+    other_drone_paths: Optional[list[list[tuple[int, int]]]] = None,
+    ai_seed: int = 0, drone_id: int | None = None,
+    direction_bias: Optional[dict[tuple[int, int], float]] = None,
+    reservation_table=None,
+    comm_anchor_cells: Optional[list[tuple[int, int]]] = None,
+    comm_range_cells: float | None = None, comm_risk_weight: float = 0.0,
+    randomness: float = 0.0, max_iterations: int = 4000,
+) -> list[tuple[int, int]]:
+    """Compatibility API: a start-to-resolved-goal path, or [] on failure.
+
+    See find_path_result for status, fallback endpoint, cost and search effort.
+    All existing positional and keyword arguments retain their meaning.
+    """
+    return find_path_result(
+        game_map, start_col, start_row, goal_col, goal_row, allow_diagonal,
+        other_drone_positions, other_drone_paths, ai_seed, drone_id,
+        direction_bias, reservation_table, comm_anchor_cells, comm_range_cells,
+        comm_risk_weight, randomness, max_iterations,
+    ).path
+
+
+def find_path_result(
     game_map: Map,
     start_col: int,
     start_row: int,
@@ -39,7 +85,7 @@ def find_path(
     comm_risk_weight: float = 0.0,
     randomness: float = 0.0,
     max_iterations: int = 4000,
-) -> list[tuple[int, int]]:
+) -> PathResult:
     """
     Run A* from (start_col, start_row) to (goal_col, goal_row).
 
@@ -58,16 +104,51 @@ def find_path(
     max_iterations : int
         Safety cap on loop count.
 
-    Returns
-    -------
-    list of (col, row) tuples representing the path (including start and goal),
-    or an empty list if no path found.
+    Static costs are cardinal 1 / diagonal sqrt(2), plus direction bias and
+    nonnegative congestion/communication penalties. Biased base moves must be
+    strictly positive. A scaled octile/Manhattan lower bound handles discounts.
+    Seeded variation breaks equal-f ties only; it never perturbs f itself.
+
+    max_iterations bounds expanded non-goal nodes (stale heap entries do not
+    count). Reservations contribute a static spatial congestion envelope only.
+    Execution enforces tick-time contacts; this is not a space-time planner.
     """
+    requested = (goal_col, goal_row)
+    resolved = None
+
+    def result(status, path=None, cost=math.inf, expanded=0):
+        return PathResult(status, path or [], requested, resolved, cost, expanded)
+
+    coordinates = (start_col, start_row, goal_col, goal_row)
+    if (any(not isinstance(v, Integral) or isinstance(v, bool) for v in coordinates) or
+            not isinstance(max_iterations, Integral) or isinstance(max_iterations, bool) or
+            max_iterations < 0 or not isinstance(ai_seed, Integral)):
+        return result(PathStatus.INVALID_INPUT)
+    if (not game_map.is_passable(start_col, start_row) or
+            not game_map.in_bounds(goal_col, goal_row)):
+        return result(PathStatus.INVALID_INPUT)
+    if (not math.isfinite(randomness) or randomness < 0 or
+            not math.isfinite(comm_risk_weight) or comm_risk_weight < 0 or
+            (comm_range_cells is not None and (not math.isfinite(comm_range_cells) or comm_range_cells < 0))):
+        return result(PathStatus.INVALID_INPUT)
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    if allow_diagonal:
+        directions += [(1, 1), (1, -1), (-1, 1), (-1, -1)]
+    move_costs = {d: math.hypot(*d) + (direction_bias or {}).get(d, 0.0) for d in directions}
+    if any(not math.isfinite(c) or c <= 0 for c in move_costs.values()):
+        return result(PathStatus.INVALID_INPUT)
+    scale = min(1.0, min(c / math.hypot(*d) for d, c in move_costs.items()))
+
+    def lower_bound(a, b):
+        distance = heuristic(a, b) if allow_diagonal else abs(a[0]-b[0]) + abs(a[1]-b[1])
+        return distance * scale
+
     # If goal is blocked, find nearest passable fallback
     if not game_map.is_passable(goal_col, goal_row):
         goal_col, goal_row = _nearest_passable(game_map, goal_col, goal_row)
         if goal_col is None:
-            return []
+            return result(PathStatus.UNREACHABLE)
+    resolved = (goal_col, goal_row)
 
     occupied = set(other_drone_positions) if other_drone_positions else set()
     comm_anchors = list(comm_anchor_cells or [])
@@ -82,34 +163,27 @@ def find_path(
     goal  = (goal_col,  goal_row)
 
     if start == goal:
-        return [start]
+        return result(PathStatus.FOUND, [start], 0.0)
 
-    # open_set: (f_score, counter, (col, row))
+    # Every improved label is pushed. Old labels are ignored when popped.
     counter   = 0
     open_set  = []
-    heapq.heappush(open_set, (0.0, counter, start))
+    heapq.heappush(open_set, (lower_bound(start, goal), 0.0, counter, 0.0, start))
 
     came_from: dict[tuple, tuple] = {}
     g_score: dict[tuple, float]   = {start: 0.0}
-    f_score: dict[tuple, float]   = {start: heuristic(start, goal)}
-    in_open: set                   = {start}
-
-    directions = (
-        [(0, 1), (1, 0), (0, -1), (-1, 0)]
-        if not allow_diagonal
-        else [(0, 1), (1, 0), (0, -1), (-1, 0),
-              (1, 1), (1, -1), (-1, 1), (-1, -1)]
-    )
-    diag_cost = math.sqrt(2)
 
     iterations = 0
-    while open_set and iterations < max_iterations:
-        iterations += 1
-        _, _, current = heapq.heappop(open_set)
-        in_open.discard(current)
+    while open_set:
+        _, _, _, queued_g, current = heapq.heappop(open_set)
+        if queued_g != g_score[current]:
+            continue
 
         if current == goal:
-            return _reconstruct(came_from, current)
+            return result(PathStatus.FOUND, _reconstruct(came_from, current), queued_g, iterations)
+        if iterations >= max_iterations:
+            return result(PathStatus.BUDGET_EXHAUSTED, expanded=iterations)
+        iterations += 1
 
         cx, cy = current
         for dx, dy in directions:
@@ -118,15 +192,18 @@ def find_path(
 
             if not game_map.is_passable(nx, ny):
                 continue
+            if dx and dy and (not game_map.is_passable(cx + dx, cy) or
+                              not game_map.is_passable(cx, cy + dy)):
+                continue  # A diagonal must not touch a blocked corner.
 
             # Soft congestion penalty for occupied cells, nearby drones, and
             # peers' planned corridors. This discourages stacking without
             # making narrow passages impossible.
             drone_penalty = _congestion_penalty(neighbor, occupied, planned_cost, randomness)
-            step = int(g_score[current]) + 1
             if reservation_table is not None and drone_id is not None:
-                drone_penalty += reservation_table.cell_penalty(drone_id, neighbor, step)
-                drone_penalty += reservation_table.edge_penalty(drone_id, current, neighbor, step)
+                penalty = getattr(reservation_table, "spatial_penalty", None)
+                if penalty is not None:
+                    drone_penalty += penalty(drone_id, neighbor)
             if comm_anchors and comm_safe_range > 0.0 and comm_risk_weight > 0.0:
                 drone_penalty += _comm_mesh_penalty(
                     neighbor,
@@ -135,22 +212,20 @@ def find_path(
                     comm_risk_weight,
                 )
 
-            pref_penalty = direction_bias.get((dx, dy), 0.0) if direction_bias else 0.0
-            move_cost = (diag_cost if (dx != 0 and dy != 0) else 1.0) + drone_penalty + pref_penalty
+            if not math.isfinite(drone_penalty) or drone_penalty < 0:
+                return result(PathStatus.INVALID_INPUT, expanded=iterations)
+            move_cost = move_costs[(dx, dy)] + drone_penalty
             tentative_g = g_score[current] + move_cost
 
             if tentative_g < g_score.get(neighbor, math.inf):
                 came_from[neighbor] = current
                 g_score[neighbor]   = tentative_g
                 tie_noise = _stable_cell_noise(neighbor, ai_seed) * 0.08 * max(0.0, randomness)
-                f                   = tentative_g + heuristic(neighbor, goal) + tie_noise
-                f_score[neighbor]   = f
-                if neighbor not in in_open:
-                    counter += 1
-                    heapq.heappush(open_set, (f, counter, neighbor))
-                    in_open.add(neighbor)
+                f = tentative_g + lower_bound(neighbor, goal)
+                counter += 1
+                heapq.heappush(open_set, (f, tie_noise, counter, tentative_g, neighbor))
 
-    return []  # No path found
+    return result(PathStatus.UNREACHABLE, expanded=iterations)
 
 
 def _stable_cell_noise(cell: tuple[int, int], seed: int) -> float:
@@ -238,6 +313,8 @@ def smooth_path(
     Greedy string-pull / line-of-sight smoothing.
     Removes redundant waypoints when direct line is clear.
     """
+    if any(not _line_of_sight(game_map, a, b) for a, b in zip(path, path[1:])):
+        return []  # Do not pass an invalid input segment to the controller.
     if len(path) <= 2:
         return path
 
@@ -262,25 +339,6 @@ def _line_of_sight(
     a: tuple[int, int],
     b: tuple[int, int],
 ) -> bool:
-    """Bresenham line check — True if all cells between a and b are passable."""
-    x0, y0 = a
-    x1, y1 = b
-    dx = abs(x1 - x0)
-    dy = abs(y1 - y0)
-    sx = 1 if x0 < x1 else -1
-    sy = 1 if y0 < y1 else -1
-    err = dx - dy
-
-    while True:
-        if not game_map.is_passable(x0, y0):
-            return False
-        if x0 == x1 and y0 == y1:
-            break
-        e2 = 2 * err
-        if e2 > -dy:
-            err -= dy
-            x0 += sx
-        if e2 < dx:
-            err += dx
-            y0 += sy
-    return True
+    """Check the same closed-cell terrain geometry used by movement."""
+    return segment_is_clear(game_map, (a[0] + 0.5, a[1] + 0.5),
+                            (b[0] + 0.5, b[1] + 0.5))

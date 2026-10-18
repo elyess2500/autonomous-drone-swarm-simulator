@@ -1,0 +1,85 @@
+name: Reliability
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: reliability-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+  PYGAME_HIDE_SUPPORT_PROMPT: '1'
+  ADSS_FAILURE_DIR: artifacts/differential
+jobs:
+  windows-contracts:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13.7'
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-test.txt
+            constraints-test.txt
+      - name: Install tested dependencies
+        run: |
+          python -m pip install -r requirements-test.txt
+          python -m pip check
+      - name: Compile and workflow sanity
+        run: python -m validation.sanity --static
+      - name: Cold headless contract (no SDL substitution)
+        run: python -m validation.sanity
+      - name: Audit complete test collection
+        run: python -m pytest --collect-only -q --audit-inventory --inventory=artifacts/collection.json
+      - name: FAST
+        run: python -m pytest -q -m fast --junitxml=artifacts/fast.xml --inventory=artifacts/fast.json
+      - name: STANDARD additions including offscreen graphics
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python -m pytest -q -m standard --junitxml=artifacts/standard.xml --inventory=artifacts/standard.json
+      - name: Preserve failure evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: windows-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 14
+  linux-functional:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13.7'
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-test.txt
+            constraints-test.txt
+      - name: Install and import
+        run: |
+          python -m pip install -r requirements-test.txt
+          python -m pip check
+          python -m validation.sanity
+      - name: Explicit functional selection (no graphics or cross-platform golden claim)
+        run: python -m pytest -q -m '(fast or standard) and not graphical' --junitxml=artifacts/linux.xml --inventory=artifacts/linux.json
+      - name: Preserve failure evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: linux-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 14

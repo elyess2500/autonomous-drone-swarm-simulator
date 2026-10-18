@@ -9,10 +9,12 @@ import csv
 import json
 import math
 import os
-import time
+import io
+from core.persistence import atomic_write, unique_path, write_json
 
-import config
+from core.experiment import Experiment, TICK_HZ, settings as config
 from core.drone import FAILED, STRANDED, CHARGING
+from core.accounting import EVENT_METRICS
 
 
 @dataclass
@@ -28,6 +30,45 @@ class MissionMetrics:
     collision_near_misses: int = 0
     stuck_recoveries: int = 0
     mission_efficiency: float = 0.0
+
+    outcome: str = "running"
+    completion_reason: str = ""
+    completed_tick: int | None = None
+    simulation_seconds: float = 0.0
+    survivors_local: int = 0
+    survivor_local_observations: int = 0
+    survivors_published: int = 0
+    survivors_rescued: int | None = None  # No survivor-rescue mechanic exists.
+    task_awards: int = 0
+    task_completions: int = 0
+    task_cancellations: int = 0
+    path_searches: int = 0
+    partitions: int = 0
+    reconnects: int = 0
+    lost_comm_entries: int = 0
+    discovery_uploads: int = 0
+    collision_rejections: int = 0
+    collision_waits: int = 0
+    backoff_attempts: int = 0
+    backoffs: int = 0
+    exhausted_backoffs: int = 0
+    field_contacts: int = 0
+    charging_starts: int = 0
+    charging_completions: int = 0
+    relaunches: int = 0
+    hardware_failures: int = 0
+    stranded_transitions: int = 0
+    stranded_drones: int = 0
+    connected_fraction: float = 0.0
+    distance_travelled_px: float = 0.0
+    battery_consumed_points: float = 0.0
+    battery_recharged_points: float = 0.0
+    event_count: int = 0
+    event_hash: str = ""
+    energy_checks: int = 0
+    energy_infeasible_checks: int = 0
+    energy_route_searches: int = 0
+    energy_returns: int = 0
 
     def csv_row(self) -> dict:
         row = asdict(self)
@@ -46,24 +87,42 @@ class MissionAnalytics:
     def __init__(self):
         self.near_miss_count = 0
         self._near_miss_active: set[tuple[int, int]] = set()
+        self._connected = {}
+        self._observed_tick = None
 
     def sample(self, mission) -> MissionMetrics:
         swarm = mission.swarm
         drones = swarm.drones
         count = max(1, len(drones))
         coverage_pct = mission.game_map.exploration_pct() * 100.0
-        failed = sum(1 for d in drones if d.state in (FAILED, STRANDED))
+        failed = sum(1 for d in drones if d.state == FAILED)
         active = sum(1 for d in drones if d.state not in (FAILED, STRANDED, CHARGING))
-        avg_battery = sum(d.battery.level for d in drones) / count
+        avg_battery = 100.0 * sum(d.battery.pct for d in drones) / count
         comm_health = sum(d.comm.signal_quality for d in drones) / count
         frontier_rate = self._frontier_completion_rate(swarm)
         stuck_recoveries = sum(getattr(d, "stuck_recoveries", 0) for d in drones)
-        self._update_near_misses(drones)
         efficiency = self._efficiency_score(
             coverage_pct, avg_battery, comm_health, frontier_rate,
             self.near_miss_count, stuck_recoveries, failed,
         )
+        a = swarm.accounting
         return MissionMetrics(
+            **{field: a.count(kind) for field,kind in EVENT_METRICS.items()},
+            outcome=mission.outcome, completion_reason=mission.completion_reason,
+            completed_tick=mission.completed_tick, simulation_seconds=mission.clock.seconds,
+            survivors_local=len(set().union(*(set(d.mission_found) for d in drones))),
+            survivor_local_observations=a.count('survivor_local'),
+            survivors_published=len(mission.game_map.mission_found),
+            stranded_drones=sum(d.state == STRANDED for d in drones),
+            connected_fraction=sum(d.comm.is_connected for d in drones)/count,
+            distance_travelled_px=sum(getattr(d,'distance_travelled_px',0.) for d in drones),
+            battery_consumed_points=sum(d.battery.consumed for d in drones),
+            battery_recharged_points=sum(d.battery.recharged for d in drones),
+            event_count=a.sequence, event_hash=a.snapshot()['event_hash'],
+            energy_checks=sum(d.energy.checks for d in drones),
+            energy_infeasible_checks=sum(d.energy.rejections for d in drones),
+            energy_route_searches=sum(d.energy.searches for d in drones),
+            energy_returns=a.count('energy_return'),
             frame=mission.frame,
             elapsed_sec=mission.stats.elapsed_seconds(),
             coverage_pct=coverage_pct,
@@ -77,17 +136,39 @@ class MissionAnalytics:
             mission_efficiency=efficiency,
         )
 
-    def _update_near_misses(self, drones):
+    def observe(self, mission, starts):
+        """Exactly one post-update observation; sample() is a pure query."""
+        if self._observed_tick == mission.frame:
+            return
+        self._observed_tick = mission.frame
+        drones = mission.swarm.drones
+        a = mission.swarm.accounting
+        from core.geometry import trajectories_contact
+        for i, d in enumerate(drones):
+            connected = d.comm.is_connected
+            previous = self._connected.get(d.drone_id, True)
+            if connected != previous:
+                a.emit('reconnect' if connected else 'partition', d.drone_id)
+            self._connected[d.drone_id] = connected
+            for other in drones[i+1:]:
+                if trajectories_contact(starts[d.drone_id], (d.px,d.py),
+                        starts[other.drone_id], (other.px,other.py), d.base_px):
+                    a.emit('field_contact', d.drone_id, other.drone_id,
+                           'continuous point contact during tick')
+        self._update_near_misses(drones, a)
+
+    def _update_near_misses(self, drones, accounting):
         threshold = config.CELL_SIZE * 0.85
         active_now: set[tuple[int, int]] = set()
         for i, da in enumerate(drones):
             for db in drones[i + 1:]:
                 pair = (min(da.drone_id, db.drone_id), max(da.drone_id, db.drone_id))
                 dist = math.hypot(da.px - db.px, da.py - db.py)
-                if dist <= threshold:
+                if dist <= threshold and not (da.is_in_docking_zone() and db.is_in_docking_zone()):
                     active_now.add(pair)
                     if pair not in self._near_miss_active:
                         self.near_miss_count += 1
+                        accounting.emit("proximity_entered", pair[0], pair[1])
         self._near_miss_active = active_now
 
     def _frontier_completion_rate(self, swarm) -> float:
@@ -122,37 +203,35 @@ class MissionAnalytics:
 class MetricsCsvLogger:
     """Append one metrics sample per second to a timestamped CSV file."""
 
-    def __init__(self, seed: int):
-        os.makedirs(config.METRICS_LOG_DIR, exist_ok=True)
-        stamp = time.strftime("%Y%m%d_%H%M%S")
-        self.path = os.path.join(config.METRICS_LOG_DIR, f"mission_metrics_{stamp}_seed{seed}.csv")
+    def __init__(self, seed: int, experiment=None):
+        self.path = unique_path(config.METRICS_LOG_DIR, f"mission_metrics_seed{seed}", ".csv")
         self._fieldnames = list(MissionMetrics().__dict__.keys())
-        with open(self.path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=self._fieldnames)
-            writer.writeheader()
+        def header(f):
+            csv.DictWriter(f, fieldnames=self._fieldnames).writeheader()
+        atomic_write(self.path, header)
+        experiment = experiment if experiment is not None else Experiment(seed)
+        try:
+            write_json(self.path + '.metadata.json', dict(
+                version=2, accounting_version=1, kind='adss.metrics-metadata', tick_hz=TICK_HZ,
+                experiment=json.loads(experiment.canonical_json), identity=experiment.identity,
+                csv=os.path.basename(self.path)))
+        except Exception:
+            os.unlink(self.path)  # Only this instance's exclusively created header.
+            raise
 
     def write(self, metrics: MissionMetrics):
-        with open(self.path, "a", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=self._fieldnames)
-            writer.writerow(metrics.csv_row())
+        # A single writer owns each unique run file. Publish complete row updates.
+        with open(self.path, 'r', newline='', encoding='utf-8') as f:
+            previous = f.read()
+        row = io.StringIO(newline='')
+        csv.DictWriter(row, fieldnames=self._fieldnames).writerow(metrics.csv_row())
+        atomic_write(self.path, lambda f: f.write(previous + row.getvalue()), overwrite=True)
 
 
-def export_replay(path: str, seed: int, replay: list[dict], metrics: MissionMetrics):
-    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    payload = {
-        "version": 1,
-        "seed": seed,
-        "exported_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
-        "metrics": metrics.csv_row(),
-        "frames": replay,
-    }
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(payload, f, indent=2)
+def export_replay(path, seed, replay, metrics):
+    raise ValueError("Legacy v1 export lacks world/configuration; use Mission.export_replay")
 
 
 def load_replay(path: str) -> dict:
-    with open(path, "r", encoding="utf-8") as f:
-        payload = json.load(f)
-    if not isinstance(payload, dict) or "frames" not in payload:
-        raise ValueError("Replay file is missing a frames array")
-    return payload
+    from core.replay import load
+    return load(path)

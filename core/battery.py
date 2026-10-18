@@ -8,7 +8,7 @@ Handles:
   - Low / critical threshold events
 """
 
-import config
+from core.experiment import settings as config
 
 
 class Battery:
@@ -27,6 +27,8 @@ class Battery:
         self.level    = float(initial)
         self.max      = float(config.BATTERY_MAX)
         self.charging = False
+        self.consumed = 0.0
+        self.recharged = 0.0
 
         # Internal flag to avoid repeated alerts
         self._low_alerted      = False
@@ -56,7 +58,15 @@ class Battery:
         if activity == "failed":
             return  # no drain on failed drones
 
-        # Base drain
+        previous = self.level
+        self.level = max(0.0, self.level - self.drain_per_tick(activity, in_storm, in_wind))
+        self.consumed += previous - self.level
+
+    @staticmethod
+    def drain_per_tick(activity: str, in_storm=False, in_wind=False) -> float:
+        """Abstract charge units; shared by execution and route forecasting."""
+        if activity == "failed":
+            return 0.0
         base_drain = {
             "idle":     config.BATTERY_IDLE_DRAIN,
             "moving":   config.BATTERY_MOVE_DRAIN,
@@ -71,11 +81,13 @@ class Battery:
         if in_wind:
             base_drain += config.BATTERY_MOVE_DRAIN * 0.15
 
-        self.level = max(0.0, self.level - base_drain)
+        return base_drain
 
     def _charge(self):
         """Increment charge level; stop when full."""
+        previous = self.level
         self.level = min(self.max, self.level + config.BATTERY_CHARGE_RATE)
+        self.recharged += self.level - previous
         if self.level >= self.max:
             self.charging = False
             self._low_alerted      = False

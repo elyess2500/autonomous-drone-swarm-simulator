@@ -1,185 +1,118 @@
-# Autonomous Drone Swarm Simulator
+# Autonomous Drone Swarm Simulator (ADSS)
 
-A real-time autonomous drone swarm simulation built with Python and Pygame.
+A Python/Pygame multi-agent simulator for exploring path planning, coordinated search, communication constraints and energy-aware autonomy. ADSS pairs an inspectable mission interface with a deterministic, headless simulation engine and regression evidence.
 
-The project simulates coordinated reconnaissance and search-and-rescue missions across procedurally generated environments using autonomous multi-agent drone behavior, communication-aware exploration, and realistic battery/docking systems.
+![ADSS live mission with published map, communication links and selected-drone energy inspector](docs/images/mission.png)
 
----
+*Real seed-2026 capture at tick 3,600: eight drones, 27.6% published coverage and two of five survivor zones published. Normal operational view; ground-truth mode is off.*
 
-## Features
+## What it does
 
-### Autonomous Drone AI
+Drones search a generated grid containing obstacles, no-fly areas, wind and hazards. A centralized coordinator allocates frontier/sector work and relay roles; individual agents plan routes, sense locally, manage charge and return to base. Disconnected observations stay private until a radio path to base is restored.
 
-* Independent drone finite-state machines
-* Frontier-based exploration
-* Battery-aware task planning
-* Autonomous offline operation during communication loss
-* Lost-communication recovery and synchronization
-* Dynamic relay-anchor roles for mesh networking
+The project demonstrates how planning, coordination and simulation engineering interact—and how to test their boundaries. It is an abstract autonomous-systems simulator, **not a flight controller or a physical drone safety model**.
 
-### Swarm Coordination
+## Key capabilities
 
-* Multi-drone frontier negotiation
-* Sector fallback assignment
-* Communication-aware path planning
-* Reservation-aware congestion avoidance
-* Adaptive exploration vs relay balancing
+- A* with explicit result statuses, corner-valid smoothing and deterministic path variation.
+- Centralized Contract-Net-inspired task allocation with authoritative ownership.
+- Tick-based reservations and execution-level point-agent priority, wait and bounded backoff.
+- Idealized range-based relay connectivity, offline discovery buffering and reconnect synchronization.
+- Route-aware abstract-charge admission, return reserve and charging/readiness lifecycle.
+- Fixed 60 Hz simulation time, isolated RNG streams and immutable experiment configuration.
+- Headless execution, deterministic accounting, CSV output and self-contained sampled detached playback.
+- Selected-drone inspection, mission/event views and explicitly labeled ground-truth diagnostics.
 
-### Environment Simulation
+## Interface
 
-* Procedurally generated terrain
-* Obstacles and no-fly zones
-* Fog of war
-* Weather and wind systems
-* Survivor placement and search zones
+Click a drone or fleet card to inspect its task, route, connectivity and latest energy decision. The default map shows globally published survivor information; drone positions are **simulator telemetry**, not a modeled telemetry delivery service.
 
-### Realistic Systems
+[Interface guide](docs/user_guide.md) · [Published survivor capture](docs/images/survivor.png) · [Detached replay capture](docs/images/replay.png)
 
-* Physical docking and charging only at base
-* Battery drain, recharge, relaunch, and stranded states
-* Relay mesh communication network
-* Offline autonomy with delayed synchronization
+## Architecture
 
-### Visualization & Replay
-
-* Real-time Pygame dashboard and minimap
-* Camera pan, zoom, and follow modes
-* Drone trails, sensor rings, and communication links
-* Replay export/load system
-* CSV mission analytics logging
-* Cinematic demo mode
-
----
-
-## Tech Stack
-
-* Python
-* Pygame
-* NumPy
-* Pytest
-
----
-
-## Demo
-
-### Main Simulation
-
-<img width="1747" height="1012" alt="image" src="https://github.com/user-attachments/assets/1477e0f2-3b75-4378-92e2-cba416d44776" />
-
-
-### Analytics System
-
-<img width="798" height="504" alt="image" src="https://github.com/user-attachments/assets/7c761fef-829d-47c2-a9f5-dba8c348e090" />
-
-
----
-
-## Installation
-
-```bash
-git clone https://github.com/elyess2500/autonomous-drone-swarm-simulator.git
-cd autonomous-drone-swarm-simulator
-
-python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
-# macOS/Linux
-source .venv/bin/activate
-
-pip install -r requirements.txt
+```mermaid
+flowchart TD
+    App[main.py application controller] --> Factory[core.simulation factory]
+    Factory --> Mission[Mission: clock and experiment]
+    App --> Views[ui.presentation and console]
+    App --> Playback[Detached replay viewer]
+    Mission --> Swarm[Swarm coordinator]
+    Swarm --> Drones[Drone state machines]
+    Swarm --> Coordination[Tasks, radio and reservations]
+    Drones --> Planning[A* and route energy]
+    Planning --> World[Map and geometry]
+    Mission --> Records[Accounting, metrics and persistence]
 ```
 
----
+Rendering observes authoritative state. The engine can construct and advance a mission without Pygame initialization or UI imports; compatible core drawing helpers still import Pygame. [Architecture and tick ordering](docs/architecture.md)
 
-## Run
+## Quick start
 
-```bash
+Tested reference: **CPython 3.13.7 on Windows x64**. From the repository root in PowerShell:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 python main.py
 ```
 
----
+The menu offers Start Mission, Demo Mode, Replay Viewer and presentation settings. For environment troubleshooting, a copyable headless example and replay export, see [Getting started](docs/getting_started.md).
 
-## Tests
+| Control | Action |
+| --- | --- |
+| Click drone / fleet card | Inspect selection |
+| `P`, `M` | Pause/resume; return to menu |
+| Arrows, wheel / `+` / `-`, `Space`, `Q` | Pan, zoom, follow, reset camera |
+| `C`, `T`, `F` | Communication links, routes/trails, frontier/sector work |
+| `B`, `J`, `N`, `F1` | Dashboard, events, minimap, help |
+| `E`, `L` | Export replay; load latest replay |
 
-```bash
-python -m pytest -q
-python -m compileall .
-python tests/gameplay_smoke.py
-python tests/battery_docking_tests.py
+## Validation
+
+```powershell
+python -m pip install -r requirements-test.txt
+python -m validation.sanity
+python -m pytest -q -m fast
+python -m pytest -q -m "fast or standard"
 ```
 
----
+Current inventory: **336 collected tests**. The last full run passed 333 tests; the subsequent menu-only polish passed all 23 UI cases, including three added cases. FAST, STANDARD and HEAVY are distinct tiers; FAST + STANDARD excludes the 10,800-tick smoke.
 
-## Controls
+Evidence includes three-seed per-tick differential comparison, deterministic goldens, failure injection, headless/replay contracts and presentation-independence checks. **GitHub Actions workflows are locally validated; hosted CI and Linux runtime execution remain unverified.** [Validation commands and evidence](docs/validation.md) · [Claims and evidence](docs/claims_and_evidence.md)
 
-| Key           | Action                     |
-| ------------- | -------------------------- |
-| H             | Toggle heatmap             |
-| C             | Toggle communication links |
-| S             | Toggle sensor rings        |
-| T             | Toggle drone trails        |
-| F             | Toggle frontier overlay    |
-| V             | Toggle reservation overlay |
-| D             | Toggle AI decision labels  |
-| P             | Pause / resume             |
-| +/-           | Zoom camera                |
-| WASD / Arrows | Pan camera                 |
-| Space         | Follow next drone          |
-| Q             | Reset camera               |
-| R             | Restart mission            |
-| E             | Export replay              |
-| L             | Load replay                |
-| ESC           | Quit                       |
+## Performance
 
----
+Profiling identified repeated route-energy geometry as a major cost. A bounded pure-calculation cache preserved exact tested behavior while paired 3,600-tick trials showed mean update reductions of **38.8–49.9%** across three seeds. Maximum latency increased in those trials; no real-time guarantee is claimed. [Measurements, methodology and scaling limits](docs/performance.md)
 
-## Project Structure
+## Controlled research results
 
-```text
-core/
-    analytics.py
-    battery.py
-    communication.py
-    drone.py
-    intelligence.py
-    map.py
-    mission.py
-    pathfinding.py
-    swarm.py
+A preregistered study compared radio range and swarm size across eight paired seeds, five conditions and 900 ticks per run. In this short ADSS search window, reducing radio range from 180 to 90 pixels lowered mean published coverage by **7.31 percentage points** (98.75% paired-bootstrap interval: −8.79 to −5.88). Increasing the fleet from eight to sixteen raised coverage by **3.15 points** (2.24 to 3.91), while mean update cost rose from **13.25 to 64.82 ms** in these observational timing trials.
 
-ui/
-    dashboard.py
-    minimap.py
+These are model-specific early-search results, not physical-drone or eventual mission-success claims. [Research report](docs/research_report.md) · [Locked protocol](docs/research_protocol.md) · [Raw data and reproduction](research/README.md)
 
-tests/
-    gameplay_smoke.py
-    battery_docking_tests.py
-```
+## Technical documentation
 
-Additional implementation details:
+| Read | Purpose |
+| --- | --- |
+| [Architecture](docs/architecture.md) | Ownership, tick sequence, RNG/config, accounting and replay |
+| [Algorithms](docs/algorithms.md) | Planning, allocation, collision, communication and energy contracts |
+| [Getting started](docs/getting_started.md) / [User guide](docs/user_guide.md) | Run, inspect, record and replay |
+| [Validation](docs/validation.md) / [Performance](docs/performance.md) | Reproduce checks and interpret measurements |
+| [Limitations](docs/limitations.md) | What the model and evidence do not establish |
+| [Engineering evolution](docs/engineering_evolution.md) | Correctness-first development and historical reports |
 
-* `docs/architecture.md`
-* `docs/algorithms.md`
+## Limitations and next work
 
----
+Coordination is centralized. Collision checks model points with a shared-docking exception and bounded recovery, not finite drone bodies or complete multi-agent path planning. Radio has no packet loss, bandwidth or propagation simulation. Charge is abstract; future traffic/weather can invalidate forecasts. Survivor **discovery** is modeled, survivor **rescue** is not. Replay supports sampled playback, not checkpoints or continuation.
 
-## Current Status
+Exact reproducibility is validated for specific configurations/runtime conditions, not proved across platforms. Larger swarms can incur multi-second stalls. [Full limitations](docs/limitations.md)
 
-The simulator includes:
-
-* autonomous exploration,
-* relay mesh communication,
-* offline drone autonomy,
-* replay/analytics systems,
-* realistic docking and battery behavior,
-* and cinematic visualization tools.
-
-The project is actively being refined for performance optimization, additional mission behaviors, and expanded AI coordination systems.
-
----
+Steps 1–14 are approved. Step 15, the final planned phase, is approved and closed with its controlled study and reproducible artifacts. No additional roadmap phase has been started.
 
 ## License
 
-MIT License.
+[MIT](LICENSE).
+
+Publication packaging preserves exact source/research bytes; historical evidence is curated separately. [Evidence provenance](docs/evidence/README.md) · [Release preparation](docs/publication.md)

@@ -12,7 +12,12 @@ Features
 
 import math
 import numpy as np
-import config
+from core.experiment import settings as config
+
+
+def radio_enabled(drone) -> bool:
+    """Failure disables radio; stranded means no power. Docking supplies power."""
+    return drone.state not in ('failed', 'stranded')
 
 
 class CommNode:
@@ -87,14 +92,17 @@ class CommManager:
     # Main update
     # ──────────────────────────────────────────
 
-    def update(self, drones: list):
+    def update(self, drones: list, advance_counters: bool = True):
         """
         Rebuild direct links, relay paths, and connection counters.
-        Should be called every COMM_SYNC_INTERVAL frames (or every frame cheaply).
+        Swarm advances contact counters once before movement, then refreshes
+        geometry without advancing counters before sensing/delivery. Reconnection
+        resets the counter in either phase. The refresh preserves this tick's inbox.
         """
         self.active_links.clear()
         self.relay_links.clear()
-        self._inbox = {d.drone_id: [] for d in drones}
+        if advance_counters:
+            self._inbox = {d.drone_id: [] for d in drones}
 
         # 1. Build direct-link matrix
         direct: dict[int, set[int]] = {}  # drone_id → set of directly connected drone_ids
@@ -106,14 +114,14 @@ class CommManager:
             # Check base
             dx = d.px - self.base_px[0]
             dy = d.py - self.base_px[1]
-            if dx * dx + dy * dy <= self._range2:
+            if radio_enabled(d) and dx * dx + dy * dy <= self._range2:
                 direct[d.drone_id].add(BASE)
 
         for i, da in enumerate(drones):
             for db in drones[i + 1:]:
                 dx = da.px - db.px
                 dy = da.py - db.py
-                if dx * dx + dy * dy <= self._range2:
+                if radio_enabled(da) and radio_enabled(db) and dx * dx + dy * dy <= self._range2:
                     direct[da.drone_id].add(db.drone_id)
                     direct[db.drone_id].add(da.drone_id)
                     self.active_links.append((da.drone_id, db.drone_id))
@@ -133,7 +141,7 @@ class CommManager:
         head = 0
         while head < len(queue):
             node = queue[head]; head += 1
-            for nb in adj.get(node, set()):
+            for nb in sorted(adj.get(node, set())):
                 if nb not in reachable:
                     reachable.add(nb)
                     parent[nb] = node
@@ -160,7 +168,8 @@ class CommManager:
                 node.signal_quality = max(0.1, 1.0 - dist / (config.DRONE_COMM_RANGE * 3))
             else:
                 node.relay_ids = set()
-                node.tick_disconnected()
+                if advance_counters:
+                    node.tick_disconnected()
                 node.signal_quality = 0.0
 
         self.weak_drone_ids = {
@@ -182,7 +191,7 @@ class CommManager:
         }
         clusters: list[set[int]] = []
         seen: set[int] = set()
-        for start in disconnected:
+        for start in sorted(disconnected):
             if start in seen:
                 continue
             stack = [start]
@@ -191,7 +200,7 @@ class CommManager:
             while stack:
                 node = stack.pop()
                 cluster.add(node)
-                for nb in direct.get(node, set()):
+                for nb in sorted(direct.get(node, set())):
                     if nb == base_id or nb not in disconnected or nb in seen:
                         continue
                     seen.add(nb)
@@ -216,13 +225,15 @@ class CommManager:
 
     def broadcast(self, drones: list):
         """
-        Flush each drone's outbox and deliver messages to all connected peers.
-        Also synchronise fog-of-war arrays between connected drones.
+        Deliver queued messages within the enabled base-connected component.
+        Disconnected outboxes persist; isolated components do not store-and-forward
+        through peers. Sensor discovery uploads use Drone's immediate gated merge.
         """
         # Collect all outgoing messages
         all_msgs: list[dict] = []
-        for d in drones:
-            all_msgs.extend(d.comm.flush_outbox())
+        for d in sorted(drones, key=lambda d: d.drone_id):
+            if radio_enabled(d) and d.comm.is_connected:
+                all_msgs.extend(d.comm.flush_outbox())
 
         # Deliver to reachable drones
         for msg in all_msgs:
@@ -230,7 +241,7 @@ class CommManager:
             for d in drones:
                 if d.drone_id == src:
                     continue
-                if src in d.comm.connected_ids or src in d.comm.relay_ids:
+                if radio_enabled(d) and d.comm.is_connected:
                     self._inbox[d.drone_id].append(msg)
 
         # Fog sync: merge explored cells among connected cluster
@@ -239,13 +250,13 @@ class CommManager:
 
     def _sync_fog(self, drones):
         """
-        For every pair of connected drones, OR their fog arrays together
-        to simulate shared mapping data.
+        Merge known-cell sets only within the base-connected component.
+        This does not itself reveal the global map or transfer pending buffers.
         """
         for i, da in enumerate(drones):
             for db in drones[i + 1:]:
-                if (da.drone_id in db.comm.connected_ids or
-                        da.drone_id in db.comm.relay_ids):
+                if (radio_enabled(da) and radio_enabled(db) and
+                        da.comm.is_connected and db.comm.is_connected):
                     # Merge exploration
                     merged = da.map_known | db.map_known
                     da.map_known = merged.copy()

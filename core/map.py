@@ -8,9 +8,8 @@ The Map holds a 2D numpy array of CellType values plus separate arrays for:
 """
 
 import numpy as np
-import random
 import pygame
-import config
+from core.experiment import Experiment, settings as config
 
 # ──────────────────────────────────────────────
 # Cell type constants
@@ -66,11 +65,10 @@ class Map:
         Indices of mission zones that have been discovered.
     """
 
-    def __init__(self, seed: int | None = None):
-        self.seed = seed if seed is not None else random.randint(0, 99999)
-        if seed is not None:
-            random.seed(seed)
-            np.random.seed(seed)
+    def __init__(self, seed: int | None = None, *, experiment=None):
+        self.experiment = experiment if experiment is not None else Experiment(seed)
+        self.seed = self.experiment.seed
+        self.world_rng = self.experiment.stream('world')
 
         self.rows = config.MAP_ROWS
         self.cols = config.MAP_COLS
@@ -100,7 +98,7 @@ class Map:
         # 1. Random obstacle scatter
         for r in range(rows):
             for c in range(cols):
-                if random.random() < config.OBSTACLE_DENSITY:
+                if self.world_rng.random() < config.OBSTACLE_DENSITY:
                     self.grid[r, c] = CELL_OBSTACLE
 
         # 2. Cellular-automata smoothing pass (makes clumps look natural)
@@ -132,8 +130,8 @@ class Map:
         ]
         for count, radius, ztype in zone_specs:
             for _ in range(count):
-                c_col = random.randint(radius + 5, cols - radius - 5)
-                c_row = random.randint(radius + 5, rows - radius - 5)
+                c_col = self.world_rng.randint(radius + 5, cols - radius - 5)
+                c_row = self.world_rng.randint(radius + 5, rows - radius - 5)
                 # Skip if too close to base
                 if abs(c_col - bc) < 8 and abs(c_row - br) < 8:
                     continue
@@ -188,7 +186,7 @@ class Map:
                 candidates.append((col, row, dist))
         if not candidates:
             candidates = [(c, r, 0) for c, r in reachable]
-        random.shuffle(candidates)
+        self.world_rng.shuffle(candidates)
         if getattr(config, "QUICK_DEMO_MODE", False):
             candidates.sort(key=lambda item: item[2])
 
@@ -277,8 +275,8 @@ class Map:
                 continue
             if not self.fog[row, col]:
                 newly_revealed += 1
+                self.heatmap[row, col] += 1
             self.fog[row, col] = True
-            self.heatmap[row, col] += 1
         if cells:
             self._fog_dirty = True
         return newly_revealed

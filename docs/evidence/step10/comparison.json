@@ -1,0 +1,20 @@
+{
+  "repeat_non_timing_fields": 40,
+  "repeat_equal": true,
+  "matrix_groups": [
+    "state_hash",
+    "knowledge_hash",
+    "rng_hash",
+    "experiment_identity",
+    "accounting",
+    "metrics",
+    "summary",
+    "outcome",
+    "completion_reason"
+  ],
+  "matrix_conditions": 7,
+  "matrix_equal": true,
+  "final_source_hashes_verified": true,
+  "independent_probe_agreement": true,
+  "full_suite": "277 passed, 1 warning in 1308.56s (0:21:48)"
+}

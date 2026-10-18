@@ -1,0 +1,38 @@
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.7)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+............................................seed=2026
+frames=10800
+coverage_start=0.0124
+coverage_end=0.4447
+survivors_found=4/5
+survivor_detection_bonus=3
+scan_radius=3
+relaunch_succeeded=True
+stuck_zero_rtb=[]
+stranded=[]
+final_lost_comm=[]
+max_lost_comm_streaks={0: 462, 1: 386, 2: 438, 3: 0, 4: 17, 5: 483, 6: 442, 7: 534}
+connectivity_min_connected=3/8
+connectivity_avg_ratio=0.790
+connectivity_majority_ratio=0.998
+connectivity_full_collapse_frames=0
+swarm_comm_repairs=214
+swarm_full_collapse_events=0
+relay_drones=2
+explorer_drones=3
+avg_frontier_distance=39.66
+coverage_growth_per_min=13.45%
+comm_risk_relaxation=0.70
+offline_risk_assignments=0
+forced_lost_comm={'recovered': True, 'max_lost_streak': 794, 'final_state': 'scanning', 'frames_since_contact': 0, 'recovery_label': 'base (timeout)'}
+offline_autonomy={'was_offline_autonomous': True, 'offline_cells': 29, 'unsynced_before_reconnect': 29, 'pending_after_sync': 0, 'synced_cells_visible': True, 'comm_mode': 'SYNCING', 'field_charging_violation': False}
+offline_survivor={'survivor_idx': 4, 'detected_offline': True, 'global_before_sync': False, 'global_after_sync': True, 'synced_survivors': 1, 'field_charging_violation': False}
+emergency_recoveries=0
+....................................................................................
+============================== warnings summary ===============================
+..\..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25
+  local validation artifact UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+    from pkg_resources import resource_stream, resource_exists
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+128 passed, 1 warning in 207.20s (0:03:27)

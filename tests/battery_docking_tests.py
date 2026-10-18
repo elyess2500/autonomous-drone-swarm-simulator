@@ -16,9 +16,13 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 import config
+import pytest
 
-config.FAILURE_PROB_PER_FRAME = 0.0
-config.QUICK_DEMO_MODE = False
+
+@pytest.fixture(autouse=True)
+def docking_settings(monkeypatch):
+    monkeypatch.setattr(config, 'FAILURE_PROB_PER_FRAME', 0.0)
+    monkeypatch.setattr(config, 'QUICK_DEMO_MODE', False)
 
 from main import make_simulation
 from core.drone import CHARGING, IDLE, RETURNING, STRANDED
@@ -128,6 +132,8 @@ def test_direct_dock_call_cannot_teleport_or_field_charge():
 
 
 def main():
+    config.FAILURE_PROB_PER_FRAME = 0.0
+    config.QUICK_DEMO_MODE = False
     tests = [
         test_zero_battery_away_from_base_strands,
         test_zero_battery_at_base_recharges,

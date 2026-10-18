@@ -156,8 +156,8 @@ class Dashboard:
             ("Coverage", f"{coverage:5.1f}%", "Active", str(metrics.active_drones)),
             ("Failed", str(metrics.failed_drones), "Avg Bat", f"{avg_bat:4.0f}%"),
             ("Comm", f"{comm:4.0f}%", "Frontier", f"{frontier:4.0f}%"),
-            ("NearMiss", str(metrics.collision_near_misses), "Stuck", str(metrics.stuck_recoveries)),
-            ("Efficiency", f"{efficiency:5.1f}", "Replay", "PLAY" if mission.replay_playback_active else "LIVE"),
+            ("Proximity", str(metrics.collision_near_misses), "Stuck", str(metrics.stuck_recoveries)),
+            ("Score", f"{efficiency:5.1f}", "Replay", "PLAY" if mission.replay_playback_active else "LIVE"),
         ]
         mid = x + w // 2
         for left_label, left_val, right_label, right_val in rows:
@@ -214,8 +214,8 @@ class Dashboard:
             bat_color = drone.battery.color()
             draw_bar(surf, cx + card_inner_w // 2, cy + 4,
                      card_inner_w // 2 - 4, 8,
-                     drone.battery.level, config.BATTERY_MAX, bat_color)
-            draw_text(surf, f"{drone.battery.level:4.0f}%",
+                     drone.battery.level, drone.battery.max, bat_color)
+            draw_text(surf, f"{100*drone.battery.pct:4.0f}%",
                       cx + card_inner_w // 2, cy + 14,
                       font_sm, bat_color)
 

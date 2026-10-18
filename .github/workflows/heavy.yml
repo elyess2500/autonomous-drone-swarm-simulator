@@ -1,0 +1,55 @@
+name: Heavy and milestone validation
+on:
+  schedule:
+    - cron: '23 7 * * 1'
+  workflow_dispatch:
+    inputs:
+      milestone:
+        description: Also run the full three-seed 3600-tick golden differential
+        type: boolean
+        default: false
+permissions:
+  contents: read
+env:
+  PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+  PYGAME_HIDE_SUPPORT_PROMPT: '1'
+  ADSS_FAILURE_DIR: artifacts/differential
+jobs:
+  heavy:
+    runs-on: windows-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13.7'
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-test.txt
+            constraints-test.txt
+      - run: python -m pip install -r requirements-test.txt
+      - run: python -m pip check
+      - name: Full suite including 10800-tick smoke
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python -m pytest -q -rP --audit-inventory --junitxml=artifacts/full.xml --inventory=artifacts/full.json
+      - name: Longer seven-condition presentation matrix
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: python -m validation.presentation --ticks 180 --output artifacts/presentation.json
+      - name: Optional milestone exact differential and seed repeat
+        if: github.event_name == 'workflow_dispatch' && inputs.milestone
+        run: python -m validation.differential --ticks 3600 --seeds 2026 2027 2031 --repeat --output artifacts/milestone
+      - name: Preserve failure evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: heavy-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 14

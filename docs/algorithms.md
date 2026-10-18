@@ -1,167 +1,56 @@
-# Algorithms & AI Techniques
+# Algorithms and model contracts
 
-## 1. A* Pathfinding
+These are the implemented contracts, not guarantees for real aircraft. Source and regression links are collected in [Claims and evidence](claims_and_evidence.md).
 
-**File:** `core/pathfinding.py`
+## Grid planning and motion
 
-Standard A* with the **octile distance** heuristic, which correctly accounts
-for diagonal movement:
+`find_path_result` in [pathfinding.py](../core/pathfinding.py) searches four or eight neighbors. Cardinal cost is 1 and diagonal cost is √2, plus direction bias and nonnegative congestion/communication penalties. Biased base moves must remain strictly positive. A scaled Manhattan/octile lower bound accounts for permitted discounts. Obstacles and no-fly cells are impassable; diagonal moves cannot cut blocked corners.
 
-```
-h(n) = max(Δx, Δy) + (√2 − 1) × min(Δx, Δy)
-```
+Every improved label is pushed to the heap; stale queued costs are discarded. Seeded cell variation breaks equal-`f` ties rather than perturbing `f`. Results distinguish found, invalid input, unreachable and iteration-budget exhaustion, retaining requested/resolved goals and cost. A blocked goal can resolve to a nearby passable fallback; callers needing the exact destination, including energy admission, must check it. The compatibility `find_path` API returns a path list.
 
-This is admissible and more accurate than Manhattan distance for 8-directional
-grids, producing shorter and more natural-looking paths.
+The budget counts expanded non-goal nodes, not stale heap entries. The planner uses a static spatial reservation penalty, **not A* cost as arrival time** and not a space-time search. Its deterministic cost behavior has Dijkstra-reference tests; this does not make the entire multi-agent stack globally optimal.
 
-**Collision softening:** other drones' cells are penalised (+2.0 cost) but not
-hard-blocked, allowing pass-through in tight corridors.
+Smoothing removes intermediate waypoints only when shared geometry predicates accept the segment. Capped movement avoids overshoot and adjacent-waypoint stalls. Wind changes execution speed/drain; terrain influences passability and wind exposure rather than being a general physical traversal-cost model. Smoothing/variation and greedy coordination do not guarantee minimum total mission distance.
 
-**Goal fallback:** if the target cell is blocked (e.g. an obstacle was placed
-there), a BFS fan-out finds the nearest passable alternative.
+## Frontier, sector and relay work
 
-**Path smoothing (string-pull):** a greedy line-of-sight pass removes redundant
-intermediate waypoints.  Only waypoints where LoS fails are kept, reducing
-the number of sharp turns and saving movement overhead.
+[Swarm](../core/swarm.py) performs **centralized Contract-Net-inspired task allocation**. Frontier tasks represent unexplored boundaries; bids combine useful work with travel, energy, spread and communication considerations. Sector fallback uses personalized lawnmower-style queues over remaining cells. This ordering supplies work, not a proof of 100% coverage or deadlock-free exploration.
 
----
+The swarm owns the assignment lifecycle and mirrors it into drone/frontier/sector fields. Claim/release/complete operations maintain one live owner and clear stale ownership. Productive tasks are retained through ordinary negotiation and collision waits. Relay roles are ongoing assignments and exclude exploration work; holding an anchor is not task completion. Explicit cancellation/recovery policy remains available for failures, returns and genuine stalls.
 
-## 2. Cellular-Automata Terrain Generation
+## Point-agent collision/deconfliction
 
-**File:** `core/map.py → Map._generate()`
+[ReservationTable](../core/intelligence.py) stores absolute simulation-tick forecasts with multiple owners visible at a cell/time. Forecasts follow executable sparse-path geometry, including swept intermediate cells, capped movement and wind. Stationary idle, failed, stranded and charging agents occupy their positions; returning drones occupy their actual trajectories.
 
-1. Randomly fill grid with obstacles at density `OBSTACLE_DENSITY`.
-2. Run 3 smoothing iterations:
-   - A cell survives as an obstacle if it has ≥2 obstacle neighbours.
-   - A free cell becomes an obstacle if it has ≥3 obstacle neighbours.
-3. Guarantee a clear area around the base station.
-4. Stamp circular zones (no-fly, threat, wind, mission) using a radius test.
+Reservations guide planning but are not an exclusive route lease. The execution gate checks proposed simultaneous point trajectories in deterministic priority order. Coincident tick-boundary centers are vertex conflicts; head-on swaps and diagonal crossings conflict when agents reach the same point **at the same time**. Geometric intersection at different times is not contact.
 
-This produces organic-looking clusters rather than random scatter.
+Unsafe motion waits without consuming its waypoint. A bounded sidestep/retreat may retain work; backoff is limited to two attempts per goal/state, then blockage/waiting remains possible. The physical docking zone explicitly permits shared occupancy. No finite-body clearance, corridor completeness or deadlock-free MAPF guarantee follows from this model. Zero contacts in measured probes is evidence for those runs, not a universal collision-free claim.
 
----
+## Radio and discovery knowledge
 
-## 3. Boustrophedon Coverage Planning
+[CommManager](../core/communication.py) builds an idealized symmetric range-based graph with a fixed base node. Sorted BFS finds base reachability through eligible drone relays. Any eligible drone can relay; a selected relay role is a coordination policy to improve placement, not a different radio protocol.
 
-**File:** `core/swarm.py → Sector.build_scan_queue()`
+FAILED and STRANDED drones do not relay; charging/docked drones have radio power. RETURNING and LOST_COMM states do not themselves disable a radio. Signal quality is a distance-derived heuristic; zero means zero, never a truthiness default to healthy connectivity. There is no terrain RF attenuation, packet loss, bandwidth, interference or modeled transport delay.
 
-Each sector is scanned in a lawnmower (boustrophedon) pattern:
-- Iterate rows top-to-bottom.
-- Alternate direction each row (left→right, right→left, …).
-- Skip impassable cells.
+Physical disconnection gates map and survivor publication from the **first disconnected tick**. LOST_COMM is a delayed behavioral transition after a grace interval, not permission to publish during that interval. Sensors retain local/pending discoveries; normal rendering uses the published fog/survivor set. On a restored base path, the post-motion synchronization phase merges buffered cells and survivor IDs immediately and idempotently. This is an abstract upload, not network queue simulation or decentralized SLAM. Disconnected peers do not obtain a separate modeled delivery mechanism merely by being near one another.
 
-This guarantees 100% coverage with minimum redundant traversal and no
-dead-ends.  Combined with path smoothing, drones follow near-optimal
-coverage routes.
+## Route-aware abstract energy
 
----
+[Battery](../core/battery.py) charges/drains abstract units per tick; [EnergyPolicy](../core/energy.py) reuses that rate function for forecasts. The decision checks:
 
-## 4. Swarm Sector Assignment
-
-**File:** `core/swarm.py → Swarm._assign_nearest_sector()`
-
-Greedy nearest-sector heuristic:
-```python
-nearest = min(unassigned_sectors, key=lambda s: dist(drone.cell, s.centre))
+```text
+outbound route charge + return route charge + expected work charge
++ uncertainty allowance + configured reserve <= current usable charge
 ```
 
-This distributes drones evenly across the map without explicit negotiation.
-When combined with the rebalancer, drones that finish early are redirected to
-uncovered regions, preventing idle time.
+The outbound estimate prioritizes the existing executable route to the **next intended work waypoint**, including an active sidestep before replanning. It does not forecast an entire sector. Otherwise a terrain route is searched; unreachable or fallback-only destinations are infeasible. Return estimates price the base approach lane and center conservatively, except when already within the physical docking disk.
 
-**Dynamic rebalancing** (every `REBALANCE_INTERVAL` frames):
-- Failed drones release their sector for reassignment.
-- Idle charged drones are assigned the nearest remaining sector.
+Each segment uses at least one tick, otherwise ceiling(distance/speed), and the drain rate for its expected activity. A mixed-wind segment uses the slower speed/higher rate over its whole length. Work normally budgets one scan interval; relay holding can use explicit idle-duration overhead. `BATTERY_PATH_INEFFICIENCY` supplies the uncertainty multiplier; `BATTERY_TASK_RESERVE` is an explicit abstract-charge reserve. Storm drain uses current weather. Future weather, traffic waits and communication detours are unknown.
 
----
+Admission applies to frontier, sector and relay work, including fallback paths. Sector checks use the intended first work cell, not a potentially blocked centroid. Controlled reassessment reacts to route/weather/state changes and elapsed intervals; an energy-triggered return releases work through the existing ownership lifecycle. Collision waiting still consumes activity/time energy; backoff remains part of forecast geometry. Reconnection cannot manufacture charge or bypass reserve policy.
 
-## 5. Communication Relay Routing
+Charging progresses from dock/charge to departure-ready waiting at base. Readiness is separate from physical relaunch, so an idle ready drone does not repeatedly manufacture new charging cycles. Actual departure remains an observable movement event. Emergency recovery and impossible/external disruptions can still strand drones. A windy-detour fixture showed the policy rejecting a task that previously stranded at tick 2,531 and remaining safe at base through 6,000 ticks; it does not establish that stranding is eliminated.
 
-**File:** `core/communication.py → CommManager.update()`
+## Pure computation reuse
 
-BFS from the base station through the drone graph finds all reachable nodes:
-
-```
-Base ── D0 ── D2 ── D5
-         └── D3
-              └── D6  ← reachable via relay even if out of direct range
-```
-
-Drones outside the connected component increment `frames_since_contact`; after
-`SIGNAL_LOSS_FRAMES` frames they transition to `LOST_COMM` state and operate
-autonomously until contact is restored.
-
-**Fog synchronisation:** connected drone pairs share explored cells via bitwise
-OR of their `map_known` sets, simulating real-time data relay.
-
----
-
-## 6. Battery Management
-
-**File:** `core/battery.py`
-
-Activity-based drain model:
-
-| Activity  | Drain/frame |
-|-----------|-------------|
-| Idle      | 0.008       |
-| Moving    | 0.030       |
-| Scanning  | 0.012       |
-| Charging  | +0.350      |
-
-Storm weather adds a flat +0.015/frame.  Wind zones add 15% of movement drain.
-
-The `should_return()` trigger fires when battery ≤ `BATTERY_LOW_THRESH` (25%),
-giving drones enough energy to return before exhaustion.  The threshold is
-intentionally conservative to account for longer-than-expected return paths.
-
----
-
-## 7. State Machine
-
-**File:** `core/drone.py`
-
-```
-          ┌────────────────────────────────────┐
-          │              IDLE                   │
-          └──────────────┬─────────────────────┘
-         assign sector   │
-                         ▼
-          ┌────────────────────────────────────┐
-    ┌────►│            SCANNING                 │◄────┐
-    │     └───┬──────────────────┬─────────────┘     │
-    │  batt   │ obstacle         │ scan done          │
-    │  ok     ▼                  ▼                    │
-    │  ┌──────────┐     ┌─────────────────┐           │
-    │  │ AVOIDING │     │   RETURNING     │           │
-    │  └──────────┘     └────────┬────────┘           │
-    │        │                   │ at base             │
-    │   path │                   ▼                    │
-    │   clear│          ┌────────────────┐            │
-    └────────┘          │   CHARGING     ├────────────┘
-                        └────────────────┘
-                                                (battery full → IDLE)
-
-    Any state → FAILED  (random hardware failure)
-    Any state → LOST_COMM  (radio range exceeded)
-```
-
-Transitions are evaluated in priority order each frame:
-1. Battery critical → RETURNING (highest priority)
-2. Comm lost → LOST_COMM
-3. Random failure → FAILED
-4. Normal state machine transitions
-
----
-
-## 8. Particle System
-
-**File:** `main.py → Particle`
-
-Simple Euler-integrated 2D particles with gravity, used as celebratory
-feedback when a survivor is discovered.  Each particle has randomised:
-- Initial angle and speed
-- Lifetime (30–70 frames)
-- Color (green, gold, cyan, white)
-
-Alpha-fades linearly with remaining lifetime.
+The Step 11 optimization caches **route-energy geometry**, not policy decisions. Each drone has a bounded 1,024-entry FIFO pure-cost cache; exact route/start/activity/weather keys are checked inside a terrain/dimensions/speed/drain/helper context. Custom map geometry bypasses it. Queries may read but do not populate caches. Battery, reserve, uncertainty, work and decision/accounting effects remain evaluated outside the cached calculation. A separate bounded route cache retains terrain routes. [Performance and validity evidence](performance.md)

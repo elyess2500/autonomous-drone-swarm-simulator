@@ -1,0 +1,61 @@
+{
+  "status": "complete",
+  "frozen_files_verified": 84,
+  "validated_files_verified": 70,
+  "core_and_config_files_unchanged": 19,
+  "preserved_evidence_files": 175,
+  "original_tests_preserved": 313,
+  "new_ui_cases": 20,
+  "full_suite_passed": 333,
+  "smoke_matches_step12": true,
+  "shared_capture_states_equal": 11,
+  "capture_horizon_ticks": 3600,
+  "presentation_conditions": 7,
+  "expanded_conditions": 7,
+  "expanded_per_tick_match": true,
+  "golden_repeat_seeds": [
+    2026,
+    2027,
+    2031
+  ],
+  "golden_repeat_ticks": 60,
+  "report_sections": 56,
+  "scoped_diff": {
+    "benchmarks/step13.py": {
+      "additions": 150,
+      "deletions": 0
+    },
+    "docs/step13_engineering_report.md": {
+      "additions": 345,
+      "deletions": 0
+    },
+    "main.py": {
+      "additions": 62,
+      "deletions": 230
+    },
+    "tests/ui_tests.py": {
+      "additions": 201,
+      "deletions": 0
+    },
+    "ui/console.py": {
+      "additions": 338,
+      "deletions": 0
+    },
+    "ui/presentation.py": {
+      "additions": 29,
+      "deletions": 110
+    },
+    "ui/replay_view.py": {
+      "additions": 59,
+      "deletions": 25
+    }
+  },
+  "git_diff_check_exit": 0,
+  "scoped_whitespace": "passed",
+  "hosted_ci_verified": false,
+  "linux_runtime_verified": false,
+  "step14_started": false,
+  "step15_started": false,
+  "committed": false,
+  "pushed": false
+}

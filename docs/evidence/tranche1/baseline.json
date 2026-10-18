@@ -1,0 +1,78 @@
+{
+  "label": "baseline",
+  "failure_probability": 0,
+  "results": [
+    {
+      "seed": 2026,
+      "ticks": 3600,
+      "path_searches": 21516,
+      "unfinished_task_replacements": 14010,
+      "relay_task_conflicts": 56,
+      "orphaned_ownership_ticks": 15698,
+      "frontier_awards": 14050,
+      "frontier_completions": 0,
+      "final_orphaned_ownership": 8,
+      "coverage_pct": 8.76010781671159,
+      "survivors": 0,
+      "average_connectivity": 1.0,
+      "min_connectivity": 1.0,
+      "field_charging_violations": 0,
+      "states": {
+        "scanning": 6,
+        "charging": 1,
+        "returning": 1
+      },
+      "mean_ms": 3.4176503334068307,
+      "p95_ms": 7.866560002730694,
+      "p99_ms": 10.503154996840744,
+      "state_hash": "cfdcf0cf4e84f714f7ffa1372bffc6c602fc1dcc70c4a0d6d2e6fb070194006f"
+    },
+    {
+      "seed": 2027,
+      "ticks": 3600,
+      "path_searches": 25864,
+      "unfinished_task_replacements": 15575,
+      "relay_task_conflicts": 1206,
+      "orphaned_ownership_ticks": 25081,
+      "frontier_awards": 15625,
+      "frontier_completions": 0,
+      "final_orphaned_ownership": 4,
+      "coverage_pct": 9.36742934051144,
+      "survivors": 1,
+      "average_connectivity": 1.0,
+      "min_connectivity": 1.0,
+      "field_charging_violations": 0,
+      "states": {
+        "scanning": 7,
+        "returning": 1
+      },
+      "mean_ms": 6.270072861298104,
+      "p95_ms": 23.01735001819906,
+      "p99_ms": 33.016602995339746,
+      "state_hash": "7564a2ce5fc177d72e5e02a2f4d9e4b8e0ecd169ef13f0198fc0b99670a6045f"
+    },
+    {
+      "seed": 2031,
+      "ticks": 3600,
+      "path_searches": 25217,
+      "unfinished_task_replacements": 19053,
+      "relay_task_conflicts": 285,
+      "orphaned_ownership_ticks": 14612,
+      "frontier_awards": 19098,
+      "frontier_completions": 0,
+      "final_orphaned_ownership": 4,
+      "coverage_pct": 6.201132380695605,
+      "survivors": 1,
+      "average_connectivity": 1.0,
+      "min_connectivity": 1.0,
+      "field_charging_violations": 0,
+      "states": {
+        "scanning": 8
+      },
+      "mean_ms": 5.3901621665378725,
+      "p95_ms": 17.05863001843681,
+      "p99_ms": 34.38637700688557,
+      "state_hash": "5f291b4d992b2b3c99f3a28a82745d452e1768911343e068e30b5c68a7e6e234"
+    }
+  ]
+}

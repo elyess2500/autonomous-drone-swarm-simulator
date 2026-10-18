@@ -1,0 +1,57 @@
+{
+  "sizes": [
+    [
+      1100,
+      760
+    ],
+    [
+      1400,
+      850
+    ],
+    [
+      1920,
+      1080
+    ]
+  ],
+  "method": "Inspected actual PNG captures through image viewer at native/full and contact-sheet scale; semantic tests cover input and geometry, not physical mouse operation.",
+  "categories": [
+    "menu",
+    "active",
+    "paths/selection",
+    "communication",
+    "published survivor",
+    "returning/energy",
+    "paused",
+    "replay",
+    "overlays",
+    "dense",
+    "settings",
+    "help"
+  ],
+  "findings": [
+    "No viewport/header/sidebar overlap in tested sizes",
+    "Inspector scroll accommodates minimum-height window",
+    "Normal labels avoid each other and stay inside viewport",
+    "Replay timeline and completed status visible",
+    "Settings controls and labels share ordering",
+    "Ground truth mode explicitly labeled; default survivor markers require publication"
+  ],
+  "limitations": [
+    "Optional all-decision labels may overlap around the shared dock",
+    "Co-located drones share glyph positions; fleet list provides selection",
+    "Replay list clips extra rows beyond available panel height with disclosure",
+    "No arbitrary DPI/resolution/color-vision/hardware certification"
+  ],
+  "contrast_ratios": {
+    "text/background": 16.167666068395256,
+    "text/panel": 14.448230241215196,
+    "secondary/background": 8.624367942719365,
+    "secondary/panel": 7.707163989794901,
+    "accent/background": 11.002024287215272,
+    "accent/panel": 9.831955914271648,
+    "warning/background": 11.335513701357742,
+    "warning/panel": 10.129978635557146,
+    "danger/background": 7.83236338067544,
+    "danger/panel": 6.999389335364569
+  }
+}

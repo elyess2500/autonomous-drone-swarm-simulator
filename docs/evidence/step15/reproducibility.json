@@ -1,0 +1,38 @@
+{
+  "equal": true,
+  "compared_fields": [
+    "accounting",
+    "condition",
+    "energy_diagnostics",
+    "experiment",
+    "experiment_identity",
+    "final_group_hashes",
+    "final_summary",
+    "harness_hash",
+    "initial_metrics",
+    "manifest_hash",
+    "metrics",
+    "observations",
+    "outcome",
+    "run_key",
+    "runtime",
+    "schema",
+    "seed",
+    "series",
+    "source_identity",
+    "status",
+    "study",
+    "ticks",
+    "total_survivors",
+    "world_hash"
+  ],
+  "differences": [],
+  "excluded_fields": [
+    "artifacts",
+    "timing"
+  ],
+  "ticks": 900,
+  "seed": 41001,
+  "original_hash": "2183cd5bcbe32c3db47a7f585aa5e4b08e1eda0e5e85377874c1d114c4d3582e",
+  "repeat_hash": "7c120a0a3a08580d5eacf839f65dfdd952af71fc05aa2b7d9f3402051f9fd665"
+}

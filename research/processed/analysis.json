@@ -1,0 +1,188 @@
+{
+  "schema": 1,
+  "manifest_hash": "afcbbfd7d8fc40f3362c9702980c5084297afb77f8b226ac6b10c8506a74a1a7",
+  "analysis_seed": 1502026,
+  "resamples": 20000,
+  "analysis_source_sha256": "f3cd76f7472740b6caf8ecfa58e9f6b5e623aad8dbbcfe979c1592a02d96fd14",
+  "analysis_runtime": {
+    "python": "3.13.7",
+    "numpy": "2.3.4",
+    "matplotlib": "3.10.7"
+  },
+  "method": "paired percentile bootstrap; seed blocks; primary Bonferroni marginal 98.75%",
+  "seeds": [
+    41001,
+    41002,
+    41003,
+    41004,
+    41005,
+    41006,
+    41007,
+    41008
+  ],
+  "runs": 40,
+  "world_pairing": true,
+  "raw_hashes": {
+    "research/raw/main/range_360_seed41001.json": "75be0cc98c781f57c46a2d8485dbdc663982696855a66e8f2c6d28cf98d05f29",
+    "research/raw/main/range_360_seed41002.json": "feea441fa6b9804d0a06be33e236795ef766edddf1c974415e5d21ed877d4aba",
+    "research/raw/main/range_360_seed41003.json": "926fd84ad161faff5685ed6b3c7fdded74572dbc295b4c20cef4cf4050abe58a",
+    "research/raw/main/range_360_seed41004.json": "2979c518097c9d57ad69e66a5c089f7dad6b7a6014d1b296f9c289e81eaa97e4",
+    "research/raw/main/range_360_seed41005.json": "1ff5a0f5aa816f4c56eb95bb3b575f77ffb3ffcf0dc63c498a6d71f0760f319b",
+    "research/raw/main/range_360_seed41006.json": "b98108f236b0f816ab27eefa48a5d19e409f5ff25cbef139ce838003c22c979d",
+    "research/raw/main/range_360_seed41007.json": "aeb45c057e55e6021b5dc9a6d432c2da802106d197a0634992a6f1a196fc2913",
+    "research/raw/main/range_360_seed41008.json": "434cf39452d9e7a51cde2d70b6c708bef2ec047dec2ec6724c4f2b720813633d",
+    "research/raw/main/range_90_seed41001.json": "a9a59405dcfd54abacd0ef8c4f596ed222bcc06b33f7efd48bca185e09cb52fd",
+    "research/raw/main/range_90_seed41002.json": "2bbc379a46149ab0f94388a278691ea7054b94cee10914cb5cfa769d65b68e9b",
+    "research/raw/main/range_90_seed41003.json": "fb262c4f8b31b741d2f077604a27980af379674d7b688d5af3d10572daa38e87",
+    "research/raw/main/range_90_seed41004.json": "263a4e56e7d0e1cef2f76647fdfd2cb6eac96356b662744709c5523a45fd4af8",
+    "research/raw/main/range_90_seed41005.json": "2aa51a412a046d2201fe8e67e573b65811d98512677e8d3955a2ee0f4006b1f6",
+    "research/raw/main/range_90_seed41006.json": "d3e1ce4e62a283618049e2cee49747628e1b4254d10b084f93be5b8a7a145f12",
+    "research/raw/main/range_90_seed41007.json": "b9775e6ee4427de315c844220bf045cef9680c747cbd1035beecff0ba6a81cbb",
+    "research/raw/main/range_90_seed41008.json": "53f2c69f0dce26f7f940686e80ac8d1872b7c92c9275b1df989c12eb6d9427ac",
+    "research/raw/main/reference_seed41001.json": "2183cd5bcbe32c3db47a7f585aa5e4b08e1eda0e5e85377874c1d114c4d3582e",
+    "research/raw/main/reference_seed41002.json": "94c506f1ac99025a8d33977202f71c6192e1dc9a0e7c050008c68cf3b0a80a52",
+    "research/raw/main/reference_seed41003.json": "ba85e7796dfd7ebb7a05008e78c9b8e159429394e079e2ea80ef67a891a71190",
+    "research/raw/main/reference_seed41004.json": "34bab179f4548e81cd189fc87140c00a8bd0d3230e9f0914afd9b1951ed465bd",
+    "research/raw/main/reference_seed41005.json": "c74c85791181f521ac886f9e4adc47f802e30f1a6e8e9bfc4a11a9bb4865f5ac",
+    "research/raw/main/reference_seed41006.json": "f7cbef3f0287f5c55cb79f3179438bec3d77850aa1f4c1b7510318a209c430d0",
+    "research/raw/main/reference_seed41007.json": "d2b8c7878dc776f4f8f0b76557886621328a9f67df5d02b15e9968176436adfd",
+    "research/raw/main/reference_seed41008.json": "b733d1485765ca98d4c6c2647f3fea1e260ae29f72f3b55fb19e820b81b5d07c",
+    "research/raw/main/swarm_16_seed41001.json": "cd5e216097d6f09903038a278e31d02e183e13aa980ef67bd637b6818b48279c",
+    "research/raw/main/swarm_16_seed41002.json": "41284722ecb7d44ef27f0e133dc156dbcc8fe2ad9e682e110c5dedc961f9ec34",
+    "research/raw/main/swarm_16_seed41003.json": "0dd7dc011e14d354e34a720388969f5c493c0060cafcf09adbd09d4dd83b344f",
+    "research/raw/main/swarm_16_seed41004.json": "4880691b4b1add13ea140ae4f8653c91f43460b9a17c717a78a005d1d5843b65",
+    "research/raw/main/swarm_16_seed41005.json": "7ad68eebd56fb2d7c505565923142f6e94dbd33e6a92e983ea11fd38ab017113",
+    "research/raw/main/swarm_16_seed41006.json": "6c7c7fd371bc928ec1d19f1c631b0ddb354d115e5a393ebee26ad7b5b0fcdf51",
+    "research/raw/main/swarm_16_seed41007.json": "dd6ac85e82c4bfea161ecf3e3f7cf69ee8c03f9b0dfcfef681c2ba52f1a020b6",
+    "research/raw/main/swarm_16_seed41008.json": "db220ada7581e5c37bd8462b32045b2bff841d217f72595c014d243dd3856ace",
+    "research/raw/main/swarm_4_seed41001.json": "21d7919feb2a93ccce22f8034371335f57a48ebbc5990de11435dfe71ed6b1c3",
+    "research/raw/main/swarm_4_seed41002.json": "795afe60a44d91d626ab3ff89eda66a47bafd4737981ff1822999e243a2058ea",
+    "research/raw/main/swarm_4_seed41003.json": "0bc9cbd305baa57c07fddb8b8bf53e8863ed964a84eb955ae419596e7fd1f74a",
+    "research/raw/main/swarm_4_seed41004.json": "4d6b321dbc7a6b2c85bb5dbc49f1d24de28c86d1abba6f98058ebe523adaa194",
+    "research/raw/main/swarm_4_seed41005.json": "3074be6076479240f6ca241744e5e83d78d8d791ae05f735d58d8238889853a7",
+    "research/raw/main/swarm_4_seed41006.json": "e9e1089a2e99706eb1e3b48dc2cf07b80160101607dfba2242a2ccd25107bf26",
+    "research/raw/main/swarm_4_seed41007.json": "e3801c92d6e0f697738ac0601c61907e39bfbaa2a2375121c156c13f1392877f",
+    "research/raw/main/swarm_4_seed41008.json": "b7e5a35f1e5a849e5eef9f8f8173607a9aace2a8a1024910921c8d37a6c628b5"
+  },
+  "primary": [
+    {
+      "condition": "range_90",
+      "reference": "reference",
+      "metric": "coverage_pct",
+      "n": 8,
+      "primary": true,
+      "mean": -7.308771708625141,
+      "median": -7.439808380969717,
+      "sd": 1.8100064152974766,
+      "ci95": [
+        -8.470606589909519,
+        -6.162054898290968
+      ],
+      "ci9875": [
+        -8.791863355504887,
+        -5.87875687329649
+      ],
+      "differences": [
+        -8.95119978430844,
+        -5.321447866018368,
+        -5.243344985211079,
+        -7.050243111831444,
+        -10.086299892125137,
+        -8.366962604250741,
+        -7.829373650107991,
+        -5.621301775147929
+      ],
+      "classification": "SUPPORTED difference"
+    },
+    {
+      "condition": "range_360",
+      "reference": "reference",
+      "metric": "coverage_pct",
+      "n": 8,
+      "primary": true,
+      "mean": 3.1306717198574594,
+      "median": 3.0634188814233196,
+      "sd": 2.1884510325498163,
+      "ci95": [
+        1.7293682230282765,
+        4.468731958928197
+      ],
+      "ci9875": [
+        1.354079677678953,
+        4.810979745896896
+      ],
+      "differences": [
+        0.2965758964680507,
+        3.0524041058887104,
+        5.243344985211078,
+        -0.10804970286331717,
+        3.074433656957929,
+        5.622814097390368,
+        2.699784017278617,
+        5.16406670252824
+      ],
+      "classification": "SUPPORTED difference"
+    },
+    {
+      "condition": "swarm_4",
+      "reference": "reference",
+      "metric": "coverage_pct",
+      "n": 8,
+      "primary": true,
+      "mean": -4.822555703708306,
+      "median": -4.451550050166922,
+      "sd": 1.5442871851996163,
+      "ci95": [
+        -5.837487445136924,
+        -3.8239375801925863
+      ],
+      "ci9875": [
+        -6.095753206818155,
+        -3.563811351750898
+      ],
+      "differences": [
+        -4.583445672688057,
+        -4.13290113452188,
+        -2.4468943264318366,
+        -6.293895191788224,
+        -7.227615965480044,
+        -3.7126715092816784,
+        -4.319654427645787,
+        -5.86336740182894
+      ],
+      "classification": "SUPPORTED difference"
+    },
+    {
+      "condition": "swarm_16",
+      "reference": "reference",
+      "metric": "coverage_pct",
+      "n": 8,
+      "primary": true,
+      "mean": 3.1463449343998464,
+      "median": 3.160453808752024,
+      "sd": 1.0328000867926943,
+      "ci95": [
+        2.4425390025658484,
+        3.771152370986764
+      ],
+      "ci9875": [
+        2.235371864583647,
+        3.9122347725382114
+      ],
+      "differences": [
+        3.8824480992181165,
+        3.37655321447866,
+        4.1408980908846456,
+        2.944354403025388,
+        1.1866235167206014,
+        2.5289211729889693,
+        2.7537796976241893,
+        4.357181280258201
+      ],
+      "classification": "SUPPORTED difference"
+    }
+  ],
+  "missing_runs": 0,
+  "pilot_included": false,
+  "total_update_seconds": 917.0890759999165
+}

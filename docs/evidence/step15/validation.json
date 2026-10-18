@@ -1,0 +1,12 @@
+{
+  "fast_passed": 282,
+  "fast_seconds": 46.479,
+  "tool_tests": 6,
+  "headless": "passed",
+  "static": "passed",
+  "collected": 336,
+  "full_suite_executed": false,
+  "protected_inputs_unchanged": 70,
+  "tool_test_seconds": 2.352,
+  "fast_console_seconds": 46.59
+}

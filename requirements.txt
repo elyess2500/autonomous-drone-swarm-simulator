@@ -1,2 +1,4 @@
-pygame>=2.5.0
-numpy>=1.24.0
+pygame==2.6.1
+numpy==2.3.4
+# Pygame 2.6.1 imports pkg_resources; retain the validated provider.
+setuptools==80.9.0

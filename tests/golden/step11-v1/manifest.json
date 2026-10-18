@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "baseline": "approved-step11",
+  "platform": "Windows",
+  "python": "3.13.7",
+  "numpy": "2.3.4",
+  "pygame": "2.6.1",
+  "ticks": 3600,
+  "seeds": {
+    "2026": "2026.json.gz",
+    "2027": "2027.json.gz",
+    "2031": "2031.json.gz"
+  },
+  "files": {
+    "2026.json.gz": "594a509d60d9857423e49dfef589c5152b120cee1f87b4832fedcb6a33ac6c26",
+    "2027.json.gz": "738161f5d635a9fafc5dc182a143b3a265728ab894ad429dc49ea62647a675a6",
+    "2031.json.gz": "67c4c630d345e8070a2bcc2d17d9a30ab399b2a2c9e84dd953a8514bf6b36bb1",
+    "reference.zip": "0318db76d10de589d6e9642492945de14ae33781c2d8d98d3fb418c74713ddd8"
+  },
+  "source_hashes": {
+    "config.py": "71f3c1a2b393b2998b6c5d4549de4b519b468ee50d045017cb3fed34c24ad071",
+    "main.py": "1e55f76100f8fa29fcf2e570e1b0f168ed25c6b4eeab5137f0dd4becdffcbeaa",
+    "core/accounting.py": "9d77df39fcebb2d915a4f1d81b9b078359c3641e1d283b93696f61c82f6dcc8d",
+    "core/analytics.py": "bf114c26ae2882c3f45355f07b724b98706634e21751350d21139221882c0780",
+    "core/battery.py": "21e1a7aba9448e4826c1bb0a3120e975ce928e86bd6c8295f98ed927a3395d3b",
+    "core/communication.py": "4d269fb9d8779c358709ed4af31052d068436ea3306b0282c357be4412ddaa6c",
+    "core/drone.py": "d1049e0b2e32682ad8145438b803f0534339d734a22fde8cf4badc2ed3ca8e90",
+    "core/energy.py": "34be6feb70ce99b5d8bbebb30bc30308ed45c7d0999c1b4e46f34005302ddb3e",
+    "core/experiment.py": "2561b00e8b43ff45cbcafeed316dc577270dc69ca6c3e2004088593326cb8747",
+    "core/geometry.py": "27570f6f0e044390953958f5b4f5214b89cfc8e64b70ffeeb5e58de7ee865ce5",
+    "core/intelligence.py": "58807a4ebaee289d36462d5737adbd79f9b879a15698a47fdfb96de23290d2e6",
+    "core/map.py": "3f329dc77c7c01c98f61beeedbd5809ccb0e38287685d3b25910fb83b7ac826c",
+    "core/mission.py": "549ee0800934582e699587642d6e1afec9601e3f13adc31f465beebe20bdd8fe",
+    "core/pathfinding.py": "c85b3f5e064e48c8f7a547c9dbffdf68a2e05ad5e55dd6d007fa5afe7ab62aea",
+    "core/persistence.py": "a97dea23457cb8255227d48cb4e891442905658e23b7fe03f97f78abba97b863",
+    "core/replay.py": "ec8cf4a430a68c4d35702ccc1f1a3155a5e163587481e75c5715da7678c87e86",
+    "core/simulation.py": "6842c2c1ea0174f05227dfff7a2576e1d6877fb707d728428d4704f9cd54bf60",
+    "core/swarm.py": "8ea245fde458d47b159fc859e6906e9a29686be96f3f1dcc3fcbda89b5d0fea5",
+    "core/utils.py": "adf0363f9d3b5b9e742abb835c0356d5701824adeff024f4ea92693d38c22fb9",
+    "core/__init__.py": "5d21070956458d55a1d0c8893c0da184747f5cd2fa96147a58c86d7389d4860c",
+    "ui/dashboard.py": "21d3fb8849cabaad703cd6ae08321f99e960eebe68b8781fd8b50be898cbbf3f",
+    "ui/minimap.py": "e6f911b31ae1cfe4bc77f89c734b5ab11971b0ea6673a837863a74a5e9a6f241",
+    "ui/presentation.py": "6aa100dc285b1706df06e5964569264ffe1b3fd05222d888a8100bb8e27e525b",
+    "ui/replay_view.py": "a1ace2f5d9c193ffd04c64e51f9368d2df8a184f49df5dbdbc7ea1e1545ca645",
+    "ui/__init__.py": "9c3e2c5292cbcafaf8bb96b1851db42fe4e6692fe87ff99b34e7997fd2e79d31",
+    "benchmarks/step10.py": "ecf5b62f16b3cb907d5795f0c247ecadb408f9694c126fb5f4bbe8fbcf720c6e",
+    "benchmarks/step11.py": "9ca0d21b3903b34a492253223dca5d1c352e125a6ce70e74844bd40a3619ea8d",
+    "benchmarks/step4.py": "c892b8d7284ad59a59205c1dc9100d7358252d23626cf70ebd0a3e275844aa66",
+    "benchmarks/step5.py": "e91e6e93e539d1cb512926888f88af9fca3cd23998584af97bae17ef19b2d0a8",
+    "benchmarks/step6.py": "af746200cc54eec38d39ccf0314912d7f0ddb91fd05a46c4a43f0e0a285d776c",
+    "benchmarks/step7.py": "2e2e9350fb6c004fec3772c7d56760eeacd32055261fd74716a6b074c85a60d4",
+    "benchmarks/step8.py": "b81a7e1c8691cafa40e82180e878ac21a32afb5ce09be25d086e933c734cbde5",
+    "benchmarks/step9.py": "bc92138ddacc8e24d0339ba552110932889a80041cc26024664222dc703d0082",
+    "benchmarks/tranche1.py": "60f6a2a1048f955ff36b7a74885ac1b2c26611a4a6f0b81613c157c60a995d3b"
+  },
+  "projection_sha256": "9ca0d21b3903b34a492253223dca5d1c352e125a6ce70e74844bd40a3619ea8d",
+  "config_overrides": {
+    "QUICK_DEMO_MODE": false,
+    "AUTONOMOUS_OFFLINE_MODE": true,
+    "FAILURE_PROB_PER_FRAME": 0.0,
+    "NUM_DRONES": 8
+  }
+}

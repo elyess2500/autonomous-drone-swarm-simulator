@@ -1,0 +1,162 @@
+{
+  "label": "phase1-verified",
+  "methodology": "step4-contact-interval-v2-components",
+  "failure_probability": 0,
+  "results": [
+    {
+      "seed": 2026,
+      "ticks": 3600,
+      "path_searches": 2204,
+      "unfinished_task_replacements": 0,
+      "relay_task_conflicts": 0,
+      "orphaned_ownership_ticks": 0,
+      "frontier_awards": 25,
+      "frontier_completions": 13,
+      "final_orphaned_ownership": 0,
+      "coverage_pct": 28.086253369272235,
+      "survivors": 2,
+      "average_connectivity": 0.8592708333333333,
+      "min_connectivity": 0.25,
+      "field_charging_violations": 0,
+      "states": {
+        "idle": 2,
+        "scanning": 3,
+        "charging": 3
+      },
+      "task_cancellations": {
+        "replace with relay": 8,
+        "relay lease ended": 7,
+        "offline timeout/battery": 1,
+        "returning": 1
+      },
+      "mean_ms": 8.990747666102834,
+      "p95_ms": 17.321809998247772,
+      "p99_ms": 19.53328101430088,
+      "state_hash": "932fe36206f28b06c2e2525adbfe9bbdd1fed90d46ad009c44ce72eba56459e7",
+      "point_contact_pair_ticks": 129,
+      "proximity_episodes": 44,
+      "majority_connected_ticks": 3579,
+      "full_collapse_ticks": 0,
+      "stranded_drone_ticks": 0,
+      "majority_connectivity": 0.9941666666666666,
+      "p50_ms": 9.957450005458668,
+      "max_ms": 57.07310000434518,
+      "execution_counters": {},
+      "component_timing": {
+        "rebuild": {
+          "calls": 7200,
+          "mean_ms": 0.009009666472492326,
+          "p50_ms": 0.008200004231184721,
+          "p95_ms": 0.016405008500441836,
+          "p99_ms": 0.027701035724021515,
+          "max_ms": 0.17980003030970693,
+          "total_ms": 64.86959860194474,
+          "per_tick_ms": 0.018019332944984652
+        }
+      }
+    },
+    {
+      "seed": 2027,
+      "ticks": 3600,
+      "path_searches": 2806,
+      "unfinished_task_replacements": 0,
+      "relay_task_conflicts": 0,
+      "orphaned_ownership_ticks": 0,
+      "frontier_awards": 22,
+      "frontier_completions": 13,
+      "final_orphaned_ownership": 0,
+      "coverage_pct": 26.056527590847917,
+      "survivors": 2,
+      "average_connectivity": 0.8263888888888888,
+      "min_connectivity": 0.5,
+      "field_charging_violations": 0,
+      "states": {
+        "idle": 2,
+        "charging": 3,
+        "scanning": 2,
+        "lost_comm": 1
+      },
+      "task_cancellations": {
+        "replace with relay": 5,
+        "relay lease ended": 4,
+        "offline timeout/battery": 2
+      },
+      "mean_ms": 9.540577694650791,
+      "p95_ms": 20.490975023130883,
+      "p99_ms": 25.88585601246449,
+      "state_hash": "b6f25336d96a5a6c13503c89256383cf99ac8a24a6111d8a9a61361f02775b02",
+      "point_contact_pair_ticks": 38,
+      "proximity_episodes": 42,
+      "majority_connected_ticks": 3564,
+      "full_collapse_ticks": 0,
+      "stranded_drone_ticks": 0,
+      "majority_connectivity": 0.99,
+      "p50_ms": 7.82654999056831,
+      "max_ms": 71.92280003800988,
+      "execution_counters": {},
+      "component_timing": {
+        "rebuild": {
+          "calls": 7200,
+          "mean_ms": 0.009305764146524275,
+          "p50_ms": 0.008500006515532732,
+          "p95_ms": 0.01680001150816679,
+          "p99_ms": 0.026702028699219272,
+          "max_ms": 0.09940000018104911,
+          "total_ms": 67.00150185497478,
+          "per_tick_ms": 0.01861152829304855
+        }
+      }
+    },
+    {
+      "seed": 2031,
+      "ticks": 3600,
+      "path_searches": 1150,
+      "unfinished_task_replacements": 0,
+      "relay_task_conflicts": 0,
+      "orphaned_ownership_ticks": 0,
+      "frontier_awards": 23,
+      "frontier_completions": 13,
+      "final_orphaned_ownership": 0,
+      "coverage_pct": 22.593691021838772,
+      "survivors": 3,
+      "average_connectivity": 0.8040625,
+      "min_connectivity": 0.375,
+      "field_charging_violations": 0,
+      "states": {
+        "scanning": 3,
+        "idle": 2,
+        "charging": 3
+      },
+      "task_cancellations": {
+        "replace with relay": 6,
+        "relay lease ended": 4,
+        "offline timeout/battery": 1
+      },
+      "mean_ms": 9.771578721993137,
+      "p95_ms": 17.14689999935217,
+      "p99_ms": 19.95131799718365,
+      "state_hash": "3d337db99ee20c2c102151de39707bf7dd95f89396574ed4443ae49116e5b4b7",
+      "point_contact_pair_ticks": 220,
+      "proximity_episodes": 42,
+      "majority_connected_ticks": 3321,
+      "full_collapse_ticks": 0,
+      "stranded_drone_ticks": 0,
+      "majority_connectivity": 0.9225,
+      "p50_ms": 11.881200014613569,
+      "max_ms": 30.39950004313141,
+      "execution_counters": {},
+      "component_timing": {
+        "rebuild": {
+          "calls": 7200,
+          "mean_ms": 0.008341986483881354,
+          "p50_ms": 0.008100003469735384,
+          "p95_ms": 0.013499986380338669,
+          "p99_ms": 0.023503004340455002,
+          "max_ms": 0.08610001532360911,
+          "total_ms": 60.062302683945745,
+          "per_tick_ms": 0.01668397296776271
+        }
+      }
+    }
+  ]
+}

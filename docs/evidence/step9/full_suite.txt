@@ -1,0 +1,38 @@
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.7)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+..........................................................................................................seed=2026
+frames=10800
+coverage_start=0.0124
+coverage_end=0.5164
+survivors_found=4/5
+survivor_detection_bonus=3
+scan_radius=3
+relaunch_succeeded=True
+stuck_zero_rtb=[]
+stranded=[]
+final_lost_comm=[]
+max_lost_comm_streaks={0: 480, 1: 0, 2: 444, 3: 465, 4: 493, 5: 476, 6: 509, 7: 493}
+connectivity_min_connected=4/8
+connectivity_avg_ratio=0.741
+connectivity_majority_ratio=0.997
+connectivity_full_collapse_frames=0
+swarm_comm_repairs=224
+swarm_full_collapse_events=0
+relay_drones=1
+explorer_drones=3
+avg_frontier_distance=45.03
+coverage_growth_per_min=10.35%
+comm_risk_relaxation=0.91
+offline_risk_assignments=3
+forced_lost_comm={'recovered': True, 'max_lost_streak': 805, 'final_state': 'returning', 'frames_since_contact': 0, 'recovery_label': 'base (timeout)'}
+offline_autonomy={'was_offline_autonomous': True, 'offline_cells': 29, 'unsynced_before_reconnect': 29, 'pending_after_sync': 0, 'synced_cells_visible': True, 'comm_mode': 'SYNCING', 'field_charging_violation': False}
+offline_survivor={'survivor_idx': 4, 'detected_offline': True, 'global_before_sync': False, 'global_after_sync': True, 'synced_survivors': 1, 'field_charging_violation': False}
+emergency_recoveries=0
+...............................................................................................................................................
+============================== warnings summary ===============================
+..\..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\pygame\pkgdata.py:25
+  local validation artifact UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+    from pkg_resources import resource_stream, resource_exists
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+249 passed, 1 warning in 293.24s (0:04:53)

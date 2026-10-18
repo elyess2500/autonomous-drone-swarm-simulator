@@ -1,0 +1,18 @@
+{
+  "status": "complete",
+  "step": 10,
+  "next_step_started": false,
+  "full_suite_passed": 277,
+  "source_test_harness_hashes_match": true,
+  "source_manifest_entries": 46,
+  "report_sections": 36,
+  "git_diff_check_exit": 0,
+  "scoped_check_exit": 1,
+  "scoped_whitespace_diagnostics": false,
+  "production_added": 334,
+  "production_removed": 59,
+  "source_tests_harness_report_added": 1217,
+  "source_tests_harness_report_removed": 59,
+  "seed_repeat_equal": true,
+  "presentation_matrix_equal": true
+}

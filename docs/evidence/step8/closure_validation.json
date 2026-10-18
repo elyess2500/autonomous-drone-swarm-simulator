@@ -1,0 +1,33 @@
+{
+  "production_changes_during_resume": false,
+  "validated_hashes": {
+    "benchmarks/step8.py": "b81a7e1c8691cafa40e82180e878ac21a32afb5ce09be25d086e933c734cbde5",
+    "core/accounting.py": "9d77df39fcebb2d915a4f1d81b9b078359c3641e1d283b93696f61c82f6dcc8d",
+    "core/analytics.py": "024f0104ae7486096f4f4f701b5a7762b8b1566ad7857c8a9420a190593392d7",
+    "core/battery.py": "89792f82e723f30eb8bf7c8e96a13a9ee1800a708de934ec967824321d15402b",
+    "core/drone.py": "f443593e68d247eab63b83703f2d70e7cd9c9c7c6e96a4ffa7a7bec67c0456f4",
+    "core/intelligence.py": "58807a4ebaee289d36462d5737adbd79f9b879a15698a47fdfb96de23290d2e6",
+    "core/mission.py": "549ee0800934582e699587642d6e1afec9601e3f13adc31f465beebe20bdd8fe",
+    "core/replay.py": "cbabd8a4dc887222307ceecb52c1d6dfaa22a6f560b53af1ccbb657a7bb0cbaa",
+    "core/swarm.py": "0dadab5db40c9809da9e6bcf3b8abe255d526c2792ff21db07cab0399873131c",
+    "main.py": "7de7a121b71b7007eb311f429b6661be854c1a148a98f6c34ff5475167145b98",
+    "tests/accounting_tests.py": "db196fc17435605a291f88de65ae2f18e96da7ffb2ac2b736c6cd659239134ec",
+    "ui/dashboard.py": "21d3fb8849cabaad703cd6ae08321f99e960eebe68b8781fd8b50be898cbbf3f",
+    "ui/replay_view.py": "a1ace2f5d9c193ffd04c64e51f9368d2df8a184f49df5dbdbc7ea1e1545ca645"
+  },
+  "preserved_files_verified": 26,
+  "full_suite": "235 passed in 246.81s",
+  "focused": "78 passed in 10.90s",
+  "smoke_ticks": 10800,
+  "evidence_hashes": {
+    "full_suite.txt": "48ff8d31627f2c39afe54042a7c315579fdbf9d6f18ecc1d81c68ee49dbf1018",
+    "focused.txt": "20891f7b8099994273454c4d0e8ec36106da0f8d7c92d1e8d567df82d15b61b2",
+    "before.json": "b4c64b34ed9ca3ddcf59e4dd5ca5d9790093d0e315bf768c0c47faa05b4067a4",
+    "after.json": "3fdffc28bbda023e6996d41606cd4aa4f2420f63ee6e1d70a16a867e324b4962",
+    "repeat.json": "0c97340be6b9dd84ea7d280271a9cb0556aa83015f247db6108f86abfed17a68",
+    "presentation_matrix.json": "1a358b9c7d3a1113bd010e2ebd989d14f622da506b9ef5df48e255a2a601e798",
+    "reproducibility_check.json": "fc5558710207d71b8f83f09a12dc478a1f395755e331c8d5265175ab8a3e0c2a"
+  },
+  "git_diff_check_exit": 0,
+  "scoped_whitespace_errors": false
+}

@@ -1,0 +1,33 @@
+{
+  "status": "complete; awaiting review",
+  "date": "2026-10-07",
+  "frozen_files_verified": 104,
+  "prior_evidence_verified": 540,
+  "protected_inputs_verified": 74,
+  "preceding_step14_protected": 74,
+  "source_identity_inputs": 70,
+  "changed_baseline": [
+    "README.md",
+    "docs/portfolio_summary.md"
+  ],
+  "production_changed": false,
+  "locked_protocol_unchanged": true,
+  "raw_counts": {
+    "pilot": 7,
+    "main": 40,
+    "repeat": 1
+  },
+  "analysis_repeat_byte_identical": 12,
+  "docs_checked": 33,
+  "local_links_checked": 220,
+  "image_links_checked": 6,
+  "mermaid_structural_checks": 2,
+  "public_private_paths": 0,
+  "scoped_whitespace_eof": "passed; immutable raw serialization preserved without EOF normalization",
+  "git_diff_check_exit": 0,
+  "full_suite_rerun": false,
+  "smoke_rerun": false,
+  "hosted_ci_executed": false,
+  "next_phase_started": false,
+  "committed_or_pushed": false
+}

@@ -1,0 +1,77 @@
+{
+  "runs": [
+    {
+      "condition": "range_90",
+      "seed": 49001,
+      "coverage": 4.914933837429111,
+      "survivors": 0,
+      "connected": 0.9327083333333334,
+      "pending": 3.56,
+      "mean_ms": 35.497090666654,
+      "seconds": 21.408885799999553
+    },
+    {
+      "condition": "reference",
+      "seed": 49001,
+      "coverage": 9.154739400486092,
+      "survivors": 0,
+      "connected": 0.9204166666666667,
+      "pending": 7.251666666666667,
+      "mean_ms": 11.658940000011171,
+      "seconds": 7.109267799999543
+    },
+    {
+      "condition": "range_360",
+      "seed": 49001,
+      "coverage": 10.261949770456386,
+      "survivors": 1,
+      "connected": 0.95,
+      "pending": 0.0,
+      "mean_ms": 8.308141999994708,
+      "seconds": 5.113049200000205
+    },
+    {
+      "condition": "swarm_4",
+      "seed": 49001,
+      "coverage": 5.211990278152849,
+      "survivors": 0,
+      "connected": 0.9,
+      "pending": 0.0,
+      "mean_ms": 3.475223166651631,
+      "seconds": 2.147226699999919
+    },
+    {
+      "condition": "swarm_16",
+      "seed": 49001,
+      "coverage": 11.77423710504996,
+      "survivors": 1,
+      "connected": 0.975,
+      "pending": 0.0,
+      "mean_ms": 28.106442499994653,
+      "seconds": 17.094333000000006
+    },
+    {
+      "condition": "reference",
+      "seed": 49002,
+      "coverage": 10.083580479913723,
+      "survivors": 0,
+      "connected": 0.8939583333333333,
+      "pending": 32.82833333333333,
+      "mean_ms": 9.371931000006649,
+      "seconds": 5.747908900000766
+    },
+    {
+      "condition": "swarm_16",
+      "seed": 49002,
+      "coverage": 12.45618765165813,
+      "survivors": 0,
+      "connected": 0.9542708333333333,
+      "pending": 25.35,
+      "mean_ms": 33.30603816666553,
+      "seconds": 20.23750740000014
+    }
+  ],
+  "paired_worlds": true,
+  "estimated_main_update_seconds": 637.2153479998033,
+  "decision": "retain preregistered 900 ticks and 8 seeds; 32 drones deferred; no hypothesis or endpoint change"
+}

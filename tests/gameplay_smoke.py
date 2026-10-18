@@ -17,10 +17,14 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 import config
+import pytest
 
-config.QUICK_DEMO_MODE = False
-config.FAILURE_PROB_PER_FRAME = 0.0
-config.AUTONOMOUS_OFFLINE_MODE = True
+
+@pytest.fixture(autouse=True)
+def smoke_settings(monkeypatch):
+    monkeypatch.setattr(config, 'QUICK_DEMO_MODE', False)
+    monkeypatch.setattr(config, 'FAILURE_PROB_PER_FRAME', 0.0)
+    monkeypatch.setattr(config, 'AUTONOMOUS_OFFLINE_MODE', True)
 
 from main import make_simulation
 from core.drone import CHARGING, IDLE, SCANNING, RETURNING, STRANDED, LOST_COMM
@@ -326,4 +330,7 @@ def test_gameplay_smoke():
 
 
 if __name__ == "__main__":
+    config.QUICK_DEMO_MODE = False
+    config.FAILURE_PROB_PER_FRAME = 0.0
+    config.AUTONOMOUS_OFFLINE_MODE = True
     test_gameplay_smoke()

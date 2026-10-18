@@ -2,3 +2,6 @@
 # Disable EOL conversion even when Windows core.autocrlf is enabled.
 # Preserve textual diffs; recognize preserved CRLF while checking real whitespace.
 * -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Locked Matplotlib SVG output contains generated trailing spaces. Preserve it.
+research/figures/*.svg -whitespace

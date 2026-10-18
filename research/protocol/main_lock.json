@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-06",
+  "manifest_sha256": "e41a9576b4d8f17eb5b7c873cba0be42d8187e39a86d089beb3754adad1e1dc8",
+  "manifest_identity": "afcbbfd7d8fc40f3362c9702980c5084297afb77f8b226ac6b10c8506a74a1a7",
+  "preregistration_sha256": "199ae577cd3390aeae6ae71b3f427e77dcb4967ad9a0057745ac6b8b9682e0aa",
+  "runner_sha256": "8e1f9a6e2eb80f97e8b83f8c79ef7a047e4a7669258be2e6e1d89ac46a3896ce",
+  "estimated_update_seconds": 637.2153479998033,
+  "main_runs": 40,
+  "main_ticks": 36000,
+  "pilot_excluded": true
+}

@@ -1,0 +1,19 @@
+{
+  "python": "3.13.7",
+  "os": "Windows-11-10.0.26300-SP0",
+  "machine": "AMD64",
+  "dependencies": {
+    "pygame": "2.6.1",
+    "numpy": "2.3.4",
+    "pytest": "8.4.2",
+    "setuptools": "80.9.0",
+    "PyYAML": "6.0.3"
+  },
+  "source_identity": "1213d0f1b57f2d9a1b1122dbe936953afcd6651be8eee96fcb8acc08149cab5d",
+  "hardware": {
+    "cpu": "Intel Core i7-11370H @ 3.30GHz",
+    "physical_cores": 4,
+    "logical_processors": 8,
+    "memory_bytes": 16856203264
+  }
+}
